@@ -1,0 +1,25 @@
+Package: ShinyDuck
+Type: Package
+Title: Interactive RNA-seq Analysis Suite
+Version: 0.1.0
+Authors@R: person("Emile", "Zakiev", role = c("aut", "cre"), email = "poop@butt.kek")
+Author: Emile Zakiev [aut, cre]
+Description: Interactive Shiny-based RNA-seq analysis tool with Nextflow backend.
+Depends: R (>= 4.2.0)
+Imports:
+    shiny,
+    shinydashboard,
+    bs4Dash,
+    plotly,
+    DT,
+    processx,
+    DESeq2,
+    dplyr,
+    ggplot2,
+    ggrepel
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
+License: GPL (>= 2)
+URL: https://github.com/erzakiev/ShinyDuck
+BugReports: https://github.com/erzakiev/ShinyDuck/issues
