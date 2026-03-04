@@ -16,13 +16,8 @@ mod_pca_ui <- function(id) {
 mod_pca_server <- function(id, rv) {
 
   moduleServer(id, function(input, output, session) {
-    vst_data <- reactive({
-      req(rv$app_state == 'ready')
-      DESeq2::vst(rv$txi_deseq)
-    })
-
     pca_all <- reactive({
-      dsq <- vst_data()
+      dsq <- rv$vst_data
 
       p <- DESeq2::plotPCA(dsq,
                    intgroup = "Group",
@@ -36,7 +31,7 @@ mod_pca_server <- function(id, rv) {
     })
 
     pca_top500 <- reactive({
-      dsq <- vst_data()
+      dsq <- rv$vst_data
 
       p <- DESeq2::plotPCA(dsq,
                    intgroup = "Group",

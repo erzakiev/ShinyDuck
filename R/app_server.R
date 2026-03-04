@@ -20,8 +20,9 @@ app_server <- function(input, output, session, data_root) {
   mod_deseq_deg_server("deg", rv)
   mod_pca_server("pca", rv)
   mod_volcano_server("volcano", rv)
+  mod_coldata_server("coldata", rv)
+  mod_enrich_server("enrich", rv)
   #mod_gsva_server("gsva", rv)
-  #mod_enrich_server("enrich", rv)
   #mod_download_server("download", rv)
 
   observeEvent(input$sidebar, {
@@ -34,5 +35,10 @@ app_server <- function(input, output, session, data_root) {
     } else {
       session$sendCustomMessage("toggle_menu_items", list(disable = FALSE))
     }
+  })
+
+  observeEvent(rv$projFolderFull, {
+    header <- basename(rv$projFolderFull)
+    shinyjs::html("pageHeader", header)
   })
 }

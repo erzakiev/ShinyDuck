@@ -5,15 +5,19 @@ app_ui <- function() {
 
   shinydashboard::dashboardPage(
     shinydashboard::dashboardHeader(
-      title = span("ShinyDuck🦆",
-                   style = "color: white; font-size: 22px; font-weight: bold")
+      title = span("ShinyDucks🦆🦆",
+                   style = "color: white; font-size: 25px; font-weight: bold")
     ),
 
     shinydashboard::dashboardSidebar(
+      tags$head(tags$style(HTML(".content-wrapper {overflow-x: scroll;}"))),
       shinydashboard::sidebarMenu(id = "sidebar",
                                   shinydashboard::menuItem("Setup",
                                                            tabName = "setup",
                                                            icon = icon("play")),
+                                  shinydashboard::menuItem("Design & Subsetting",
+                                                           tabName = "coldata",
+                                                           icon = icon("bezier-curve")),
                                   shinydashboard::menuItem("QC",
                                                            tabName = "qc",
                                                            icon = icon("medal")),
@@ -26,23 +30,32 @@ app_ui <- function() {
                                   shinydashboard::menuItem("PCA",
                                                            tabName = "pca",
                                                            icon = icon("arrow-up-right-dots")),
-                                  shinydashboard::menuItem("Volcano",
-                                                           tabName = "volcano",
-                                                           icon = icon("mountain")),
-                                  shinydashboard::menuItem("GSVA",
-                                                           tabName = "GSVA",
-                                                           icon = icon("chart-column")),
+                                  #shinydashboard::menuItem("Volcano",
+                                  #                         tabName = "volcano",
+                                  #                         icon = icon("mountain")),
+                                  #shinydashboard::menuItem("GSVA",
+                                  #                         tabName = "GSVA",
+                                  #                         icon = icon("chart-column")),
                                   shinydashboard::menuItem("GO enrichment",
                                                            tabName = "enrich",
-                                                           icon = icon("sitemap")),
-                                  shinydashboard::menuItem("Downloads",
-                                                           tabName = "download",
-                                                           icon = icon("download"))
+                                                           icon = icon("sitemap"))#,
+                                  #shinydashboard::menuItem("Downloads",
+                                  #                         tabName = "download",
+                                  #                         icon = icon("download"))
 
       )
     ),
 
     shinydashboard::dashboardBody(
+
+      tags$script(HTML('
+                           $(document).ready(function() {
+                           $("header").find("nav").append(\'<div id="pageHeader" class="myClass"></div>\');
+                           })
+                           ')),
+      tags$script(HTML('$("body").addClass("fixed");')),
+
+
       tags$head(
         tags$style(HTML("
         .disabled-menu-item {
@@ -56,6 +69,19 @@ app_ui <- function() {
       "))
       ),
 
+      tags$head(tags$style(HTML(
+        '.myClass {
+            font-size: 20px;
+            line-height: 50px;
+            text-align: left;
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            padding: 0 15px;
+            overflow: hidden;
+            color: white;
+            };
+        .small-box {height: 250px}
+            '))),
+
 
       shinyjs::useShinyjs(),
 
@@ -63,6 +89,10 @@ app_ui <- function() {
 
         shinydashboard::tabItem(tabName = "setup",
                 mod_project_setup_ui("setup")
+        ),
+
+        shinydashboard::tabItem(tabName = "coldata",
+                                mod_coldata_ui("coldata")
         ),
 
         shinydashboard::tabItem(tabName = "qc",
@@ -83,15 +113,15 @@ app_ui <- function() {
 
         shinydashboard::tabItem(tabName = "volcano",
                 mod_volcano_ui("volcano")
+        ),
+        shinydashboard::tabItem(tabName = "enrich",
+                mod_enrich_ui("enrich")
         )#,
-        #shinydashboard::tabItem(tabName = "GSVA",
-        #        mod_gsva_ui("gsva")
-        #),
-        #shinydashboard::tabItem(tabName = "enrich",
-        #        mod_enrich_ui("enrich")
-        #),
         #shinydashboard::tabItem(tabName = "download",
         #        mod_download_ui("download")
+        #),
+        #shinydashboard::tabItem(tabName = "GSVA",
+        #        mod_gsva_ui("gsva")
         #)
     ),
 

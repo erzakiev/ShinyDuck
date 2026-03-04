@@ -37,9 +37,6 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
     shinyFiles::shinyFileChoose(input, "infiles", roots = roots, filetypes = c("", "gz","fastq","fq"))
     shinyFiles::shinyDirChoose(input, "infolder", roots = roots)
 
-    observeEvent(input$referenceGenomeChoice, {
-      rv$referenceGenomeChoice <- input$referenceGenomeChoice
-    })
 
     observeEvent(input$infiles, {
       req(input$infiles)
@@ -65,25 +62,32 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
 
         rv$app_state <- "ready"
         rv$projFolderFull <- inFolder
+        rv$colData <- readRDS(file.path(inFolder, "colData.RDS"))
+
         rv$txi <- readRDS(objfile)
         rv$txi_tpms <- readRDS(file.path(inFolder, "txi_tpms.RDS"))
         rv$txi_deseq <- readRDS(file.path(inFolder, "txi_deseq.RDS"))
         rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
         rv$res_DEGs_txi_deseq <- readRDS(file.path(inFolder, "res_DEGs_txi_deseq.RDS"))
         rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
-        rv$colData <- readRDS(file.path(inFolder, "colData.RDS"))
-          if(rv$colData$Group %>% nlevels() > 2) {
+        rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
+        rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
+        rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
+
+        if(rv$referenceGenomeChoice!=1){
+          rv$OrgDeeBee <- org.Mm.eg.db::org.Mm.eg.db
+        } else {
+          rv$OrgDeeBee <- org.Hs.eg.db::org.Hs.eg.db
+        }
+
+        if(rv$colData$Group %>% unique %>% length  > 2) {
           rv$multiple_groups <- 1
         } else {
           rv$multiple_groups <- 0
         }
-
       } else {
-
         rv$app_state <- "idle"
-
       }
-
     })
 
     output$previousprojname <- renderText({
@@ -98,7 +102,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
       objfile <- file.path(inFolder, "txi.RDS")
 
       if (file.exists(objfile)) {
-        "Loading project detected at selected destination."
+        "Loaded project detected at the selected destination"
       } else {
         "No project results detected at selected destination."
       }
