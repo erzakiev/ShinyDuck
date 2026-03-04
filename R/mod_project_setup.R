@@ -71,7 +71,8 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
         rv$res_DEGs_txi_deseq <- readRDS(file.path(inFolder, "res_DEGs_txi_deseq.RDS"))
         rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
         rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
-        rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
+        #rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
+        rv$vst_data <- DESeq2::vst(rv$txi_deseq)
         rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
 
         if(rv$referenceGenomeChoice!=1){
