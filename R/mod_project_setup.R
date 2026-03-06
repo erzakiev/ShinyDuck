@@ -81,7 +81,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           rv$OrgDeeBee <- org.Hs.eg.db::org.Hs.eg.db
         }
 
-        if(rv$colData$Group %>% unique %>% length  > 2) {
+        if(length(unique(rv$colData$Group))  > 2) {
           rv$multiple_groups <- 1
         } else {
           rv$multiple_groups <- 0
