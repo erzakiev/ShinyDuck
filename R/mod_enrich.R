@@ -21,14 +21,20 @@ mod_enrich_server <- function(id, rv) {
     output$GO<- DT::renderDT({
       req(rv$app_state == 'ready')
       req(rv$multiple_groups == 0)
-      varbl <- as.data.frame(rv$GO_result)
+      varbl <- format_df_numbers(as.data.frame(rv$GO_result))
       varbl$geneID <- gsub(pattern='/', replacement=' ', varbl$geneID)
       varbl
-    }, extensions = 'Buttons',
+    }, rownames = FALSE,
+    extensions = 'Buttons',
     options = list(
       dom = 'Bfrtip',
-      buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
-    server=FALSE, rownames=FALSE)
+      buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+      scrollY = TRUE,
+      scrollX = TRUE,
+      deferRender = TRUE,
+      scroller = TRUE,
+      fixedHeader = TRUE),
+    server=FALSE)
 
 
     output$GO_multitab <- renderUI({
@@ -39,16 +45,21 @@ mod_enrich_server <- function(id, rv) {
 
       toOutput <- list()
       for (o in 1:nTabs){
-        toOutput[[o]] <- as.data.frame(rv$GO_result[[o]])
+        toOutput[[o]] <- format_df_numbers(as.data.frame(rv$GO_result[[o]]))
+        rownames(toOutput[[o]]) <- NULL
         toOutput[[o]]$geneID <- gsub(pattern='/', replacement=' ', toOutput[[o]]$geneID)
       }
 
       myTabs = lapply(1: nTabs, function(x){tabPanel(paste(strsplit(names(rv$res_txi_deseq[x]), split = "_")[[1]][2:4], collapse=' ')
-                                                     , DT::renderDT(DT::datatable(toOutput[[x]], filter = 'top', extensions = 'Buttons',
+                                                     , DT::renderDT(DT::datatable(toOutput[[x]], filter = 'top', rownames = FALSE,extensions = 'Buttons',
                                                                           options = list(dom = "Blrtip",
                                                                                          buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                                                                                         scrollX = TRUE)),
-                                                                server=FALSE, rownames = FALSE))});
+                                                                                         scrollY = TRUE,
+                                                                                         scrollX = TRUE,
+                                                                                         deferRender = TRUE,
+                                                                                         scroller = TRUE,
+                                                                                         fixedHeader = TRUE)),
+                                                                server=FALSE))});
       return(do.call(tabsetPanel, myTabs))
     })
 

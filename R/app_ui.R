@@ -66,7 +66,8 @@ app_ui <- function() {
         .disabled-menu-item a {
           color: #999 !important;
         }
-      "))
+      ")),
+        tags$style(HTML("table.dataTable tbody tr {height: 40px;}")),
       ),
 
       tags$head(tags$style(HTML(
@@ -81,6 +82,8 @@ app_ui <- function() {
             };
         .small-box {height: 250px}
             '))),
+
+
 
 
       shinyjs::useShinyjs(),

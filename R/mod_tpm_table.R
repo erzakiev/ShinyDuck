@@ -1,7 +1,7 @@
 mod_tpm_table_ui <- function(id) {
   ns <- NS(id)
 tagList(
-  textOutput(ns("text_TPM")),
+  h3("Transcripts-per-million (TPM) values:"),
   DT::DTOutput(ns("TPM"))
 )
 }
@@ -10,14 +10,17 @@ mod_tpm_table_server <- function(id, rv) {
 
   moduleServer(id, function(input, output, session) {
 
-    output$text_TPM <- renderText({
-      "Transcripts-per-million (TPM) values:"
-    })
-
     output$TPM <- DT::renderDT({
 
+      df <- as.data.frame(rv$txi_tpms)
+      df_subset <- t(apply(df[2:nrow(df),3:ncol(df)], MARGIN = 1, as.numeric))
+
+      df[2:nrow(df),3:ncol(df)] <- format_df_numbers(as.data.frame(df_subset), digits = 3)
+      colnames(df) <- gsub('.fastq.trimmed', replacement = '', colnames(df))
+      colnames(df) <- gsub('_001', replacement = '', colnames(df))
+
       DT::datatable(
-        as.data.frame(rv$txi_tpms),
+        df,
         extensions = "Buttons",
         options = list(
           dom = "Blfrtip",

@@ -1,8 +1,8 @@
 mod_deseq_deg_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    textOutput(ns("text_DEGs")),
-    textOutput(ns("text_which_is_Control_in_DEG")),
+    h3(textOutput(ns("text_DEGs"))),
+    h4(textOutput(ns("text_which_is_Control_in_DEG"))),
     DT::DTOutput(ns("DESeq_DEGs")),
     uiOutput(ns("DESeq_DEGsMultitab"))
   )
@@ -17,7 +17,6 @@ mod_deseq_deg_server <- function(id, rv) {
       req(rv$multiple_groups == 0)
       message("Preparing DEG table for mono-group")
       rstxdsq <- rv$res_txi_deseq
-
       DT::datatable(as.data.frame(rstxdsq), filter = 'top', extensions = 'Buttons',
                 options = list(
                   dom = "Bl<'search'>rtip",
