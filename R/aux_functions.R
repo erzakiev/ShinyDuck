@@ -23,3 +23,15 @@ format_numbers <- function(x,
     formatC(x, format = "f", digits = digits)
   )
 }
+
+strsplits <- function(x, splits = c(" ", ",", "/", "\n", "\t"))
+{
+  for (split in splits) {
+    x <- unlist(strsplit(x, split, fixed = TRUE))
+  }
+
+  x <- trimws(x)
+  x <- x[x != ""]
+
+  unique(x)
+}

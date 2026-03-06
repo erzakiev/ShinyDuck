@@ -342,19 +342,6 @@ mod_coldata_server <- function(id, rv) {
       if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)
       txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, colData = colData_subset, design = ~Group)
 
-      #res <- format_df_numbers(rv$txi$abundance, digits = 3)
-      #res <- data.frame(ENSEMBL=rownames(res), res)
-      #annots <- AnnotationDbi::select(rv$OrgDeeBee, keys=rownames(res),
-      #                                columns="SYMBOL", keytype="ENSEMBL")
-      #result <- merge(annots, res, by.x="ENSEMBL", by.y="ENSEMBL")
-      #result <- rbind(c('-','-',colData_subset$Group),result)
-
-      #openxlsx::write.xlsx(result, file = file.path(new_dir, 'TPMs.xlsx'))
-      #saveRDS(
-      #  result,
-      #  file = file.path(new_dir, 'txi_tpms.RDS')
-      #)
-
       saveRDS(
         txi_deseq,
         file = file.path(new_dir, "txi_deseq.RDS")
@@ -528,20 +515,6 @@ mod_coldata_server <- function(id, rv) {
       saveRDS(colData_subset, file.path(new_dir, "colData.RDS"))
       saveRDS(rv$referenceGenomeChoice,
               file.path(new_dir, "referenceGenomeChoice.RDS"))
-
-
-      #res <- format_df_numbers(txi_subset$abundance, digits = 3)
-      #res <- data.frame(ENSEMBL=rownames(res), res)
-      #annots <- AnnotationDbi::select(rv$OrgDeeBee, keys=rownames(res),
-      #                                columns="SYMBOL", keytype="ENSEMBL")
-      #result <- merge(annots, res, by.x="ENSEMBL", by.y="ENSEMBL")
-      #result <- rbind(c('-','-',colData_subset$Group),result)
-
-      #openxlsx::write.xlsx(result, file = file.path(new_dir, 'TPMs.xlsx'))
-      #saveRDS(
-      #  result,
-      #  file = file.path(new_dir, 'txi_tpms.RDS')
-      #)
 
       reff <- as.character(colData_subset[which(colData_subset[,3]),2][1])
       if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)

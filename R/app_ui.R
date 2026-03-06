@@ -1,5 +1,6 @@
 #' @import shiny
 #' @import dplyr
+#' @import ggplot2
 
 app_ui <- function() {
 
