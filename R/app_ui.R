@@ -31,15 +31,15 @@ app_ui <- function() {
                                   shinydashboard::menuItem("PCA",
                                                            tabName = "pca",
                                                            icon = icon("arrow-up-right-dots")),
-                                  #shinydashboard::menuItem("Volcano",
-                                  #                         tabName = "volcano",
-                                  #                         icon = icon("mountain")),
-                                  #shinydashboard::menuItem("GSVA",
-                                  #                         tabName = "GSVA",
-                                  #                         icon = icon("chart-column")),
+                                  shinydashboard::menuItem("Volcano",
+                                                           tabName = "volcano",
+                                                           icon = icon("mountain")),
                                   shinydashboard::menuItem("GO enrichment",
                                                            tabName = "enrich",
-                                                           icon = icon("sitemap"))#,
+                                                           icon = icon("sitemap")),
+                                  shinydashboard::menuItem("GSVA",
+                                                           tabName = "GSVA",
+                                                           icon = icon("chart-column"))
                                   #shinydashboard::menuItem("Downloads",
                                   #                         tabName = "download",
                                   #                         icon = icon("download"))
@@ -120,13 +120,13 @@ app_ui <- function() {
         ),
         shinydashboard::tabItem(tabName = "enrich",
                 mod_enrich_ui("enrich")
-        )#,
+        ),
+        shinydashboard::tabItem(tabName = "GSVA",
+                mod_gsva_ui("gsva")
+        )
         #shinydashboard::tabItem(tabName = "download",
-        #        mod_download_ui("download")
-        #),
-        #shinydashboard::tabItem(tabName = "GSVA",
-        #        mod_gsva_ui("gsva")
-        #)
+                                #        mod_download_ui("download")
+                                #),
     ),
 
     tags$script(HTML("

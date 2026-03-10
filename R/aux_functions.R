@@ -24,6 +24,10 @@ format_numbers <- function(x,
   )
 }
 
+colorize_df <- function(df){
+
+}
+
 strsplits <- function(x, splits = c(" ", ",", "/", "\n", "\t"))
 {
   for (split in splits) {

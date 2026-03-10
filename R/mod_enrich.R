@@ -50,8 +50,8 @@ mod_enrich_server <- function(id, rv) {
         toOutput[[o]]$geneID <- gsub(pattern='/', replacement=' ', toOutput[[o]]$geneID)
       }
 
-      myTabs = lapply(1: nTabs, function(x){tabPanel(paste(strsplit(names(rv$res_txi_deseq[x]), split = "_")[[1]][2:4], collapse=' ')
-                                                     , DT::renderDT(DT::datatable(toOutput[[x]], filter = 'top', rownames = FALSE,extensions = 'Buttons',
+      myTabs = lapply(1: nTabs, function(x){tabPanel(names(rv$res_txi_deseq)[x] |> gsub(pattern = 'Group_', replacement = ''),
+                                                    DT::renderDT(DT::datatable(toOutput[[x]], filter = 'top', rownames = FALSE,extensions = 'Buttons',
                                                                           options = list(dom = "Blrtip",
                                                                                          buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
                                                                                          scrollY = TRUE,
@@ -103,7 +103,7 @@ mod_enrich_server <- function(id, rv) {
       tytl <- list()
       ncat <- as.numeric(input$showCategory)
       for (i in 1:length(rv$res_txi_deseq)){
-        tytl[[i]] <- paste(strsplit(names(rv$res_txi_deseq[i]), split = "_")[[1]][2:4], collapse=' ')
+        tytl[[i]] <- names(rv$res_txi_deseq)[i] |> gsub(pattern = 'Group_', replacement = '')
         if(is.null(rv$GO_result[[i]])){ p[[i]] <- ggplot()+theme_void()} else {
           if(ncat!=50){
             p[[i]] <- enrichplot::dotplot(rv$GO_result[[i]],
@@ -111,8 +111,6 @@ mod_enrich_server <- function(id, rv) {
                                           x='p.adjust',
                                           decreasing=F)
             flnm <- file.path(rv$projFolderFull,paste0('GO_dotplot_custom_number_of_Terms_300dpi_', tytl[[i]],'.png'))
-            cat('printing flnm')
-            cat(flnm)
             png(filename = flnm,
                 width = 10,
                 height = round(20*ncat/50, 1),
@@ -125,8 +123,6 @@ mod_enrich_server <- function(id, rv) {
                                           x='p.adjust',
                                           decreasing=F)
             flnm <- file.path(rv$projFolderFull,paste0('GO_dotplot_300dpi_', tytl[[i]],'.png'))
-            cat('printing flnm')
-            cat(flnm)
             png(filename = flnm,
                 width = 10,
                 height = 20,

@@ -23,7 +23,7 @@ mod_gsva_server <- function(id, rv) {
   moduleServer(id, function(input, output, session) {
 
     gsva_string <- reactive({
-      req(rv$state=='ready')
+      req(rv$app_state=='ready')
       req(input$runGSVA)
       if(nchar(input$genes_for_gsva) == 0) return(NULL)
       toRet <- strsplits(input$genes_for_gsva, c(" ", ",", "/"))
@@ -34,7 +34,7 @@ mod_gsva_server <- function(id, rv) {
 
 
     output$GSVA_genes_matching<- renderText({
-      req(rv$state=='ready')
+      req(rv$app_state=='ready')
       req(input$runGSVA)
       if(is.null(gsva_string())) return("List of genes shouldn't be empty")
 
@@ -57,7 +57,7 @@ mod_gsva_server <- function(id, rv) {
     })
 
     gsva_result <- reactive({
-      req(rv$state=='ready')
+      req(rv$app_state=='ready')
       req(input$runGSVA)
       if(is.null(gsva_string())) return({})
 
@@ -71,7 +71,7 @@ mod_gsva_server <- function(id, rv) {
       non_matching_genes <- unique(gsva_string()[which(!toupper(gsva_string()) %in% toupper(c(abund$SYMBOL, abund$ENSEMBL)))])
 
       if(length(matching_genes) < 2){
-        return({})
+        return(NULL)
       } else {
 
         gsva_string_matched(matching_genes)
@@ -84,10 +84,8 @@ mod_gsva_server <- function(id, rv) {
         abund <- abund[,-2]
         abund <- abund[,-1]
 
-        #gsva <- GSVA::gsva(as.matrix(dplyr::mutate_all(abund, function(x) as.numeric(as.character(x)))),
-        #                   gset.idx.list = list(signature))
-        gsva <- GSVA::gsva(as.matrix(data.matrix(abund)),
-                                             gset.idx.list = list(signature))
+        gsva <- GSVA::gsva(GSVA::gsvaParam(as.matrix(dplyr::mutate_all(abund, function(x) as.numeric(as.character(x)))),
+                           list(userSignature=signature)))
         gsva <- rbind(groups, gsva)
         gsva <- t(gsva)
         colnames(gsva) <- c('Group','Value')
@@ -102,7 +100,7 @@ mod_gsva_server <- function(id, rv) {
 
 
     output$GSVAplot<- renderPlot({
-      req(rv$state=='ready')
+      req(rv$app_state=='ready')
       req(input$runGSVA)
       if(is.null(gsva_result())) return({})
 
@@ -127,7 +125,7 @@ mod_gsva_server <- function(id, rv) {
     })
 
     output$GSVAtable<- DT::renderDT({
-      req(rv$state=='ready')
+      req(rv$app_state=='ready')
       req(input$runGSVA)
       if(is.null(gsva_result())) return(NULL)
       as.data.frame(gsva_result())

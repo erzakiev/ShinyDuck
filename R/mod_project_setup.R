@@ -11,7 +11,7 @@ mod_project_setup_ui <- function(id) {
       )
     ),
     tabPanel(
-      "Run analysis",
+      "Run new analysis",
       fluidRow(
         column(3,
                textInput(ns("ProjectName"), "A new project name?", value = "..."),

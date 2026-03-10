@@ -16,8 +16,8 @@ mod_deseq_deg_server <- function(id, rv) {
       req(rv$app_state == 'ready')
       req(rv$multiple_groups == 0)
       message("Preparing DEG table for mono-group")
-      rstxdsq <- rv$res_txi_deseq
-      DT::datatable(as.data.frame(rstxdsq), filter = 'top', extensions = 'Buttons',
+      rstxdsq <- rv$res_txi_deseq |> dplyr::select(-c('lfcSE', 'stat', 'pvalue'))
+      DT::datatable(format_df_numbers(as.data.frame(rstxdsq)), filter = 'top', extensions = 'Buttons',
                 options = list(
                   dom = "Bl<'search'>rtip",
                   buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
@@ -38,10 +38,30 @@ mod_deseq_deg_server <- function(id, rv) {
 
       nTabs = length(rv$res_DEGs_txi_deseq)
       rstxdsq <- rv$res_txi_deseq
+      rstxdsq <- lapply(rstxdsq, function(x) {
+        dplyr::select(x, -c(lfcSE, stat, pvalue))
+      })
+
+      names(rstxdsq) <- names(rstxdsq) |> gsub(pattern = 'Group_', replacement = '')
+
+      rstxdsq_altogether <- rstxdsq[[1]] |> dplyr::select(c("ENSEMBL", 'SYMBOL', 'baseMean'))
+      for (counter in 1:length(rstxdsq)){
+        rstxdsq_altogether <- cbind(rstxdsq_altogether,
+                                    rstxdsq[[counter]] |> dplyr::select(c("log2FoldChange",
+                                                                          'abs_log2FoldChange',
+                                                                          'padj',
+                                                                          'log10padj',
+                                                                          'Significance')) |>
+                                      dplyr::rename_with(~ paste0(names(rstxdsq)[counter], .x)))
+      }
+
+
+      rstxdsq <- c(rstxdsq, rstxdsq_altogether)
+      names(rstxdsq)[length(rstxdsq)] <- 'Altogether'
 
       myTabs = lapply(1: nTabs, function(x){
-        tabPanel(paste(strsplit(names(rstxdsq[x]), split = "_")[[1]][2:4], collapse=' '),
-                 DT::renderDT({DT::datatable(rstxdsq[[x]], filter = 'top', extensions = 'Buttons',
+        tabPanel(names(rstxdsq[x]),
+                 DT::renderDT({DT::datatable(format_df_numbers(rstxdsq[[x]]), filter = 'top', extensions = 'Buttons',
                                      options = list(dom = "Blrtip",
                                                     buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
                                                     searchCols = list(NULL, NULL, NULL, NULL,
