@@ -39,3 +39,20 @@ strsplits <- function(x, splits = c(" ", ",", "/", "\n", "\t"))
 
   unique(x)
 }
+
+convertVectEns2Symb <- function(vect, orgdb){
+  annots <- AnnotationDbi::mapIds(
+      orgdb,
+      keys = vect,
+      column = "SYMBOL",
+      keytype = "ENSEMBL",
+      multiVals = "first"
+  )
+  annots[is.na(annots)] <- vect[is.na(annots)]
+  return(annots)
+}
+
+convertDfRownamesEns2Symb <- function(df, orgdb){
+  rownames(df) <- as.vector(convertVectEns2Symb(rownames(df), orgdb))
+  return(df)
+}
