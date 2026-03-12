@@ -39,10 +39,10 @@ app_ui <- function() {
                                                            icon = icon("sitemap")),
                                   shinydashboard::menuItem("GSVA",
                                                            tabName = "GSVA",
-                                                           icon = icon("chart-column"))
-                                  #shinydashboard::menuItem("Downloads",
-                                  #                         tabName = "download",
-                                  #                         icon = icon("download"))
+                                                           icon = icon("chart-column")),
+                                  shinydashboard::menuItem("Downloads",
+                                                           tabName = "download",
+                                                           icon = icon("download"))
 
       )
     ),
@@ -123,10 +123,10 @@ app_ui <- function() {
         ),
         shinydashboard::tabItem(tabName = "GSVA",
                 mod_gsva_ui("gsva")
-        )
-        #shinydashboard::tabItem(tabName = "download",
-                                #        mod_download_ui("download")
-                                #),
+        ),
+        shinydashboard::tabItem(tabName = "download",
+                                        mod_download_ui("download")
+                                )
     ),
 
     tags$script(HTML("

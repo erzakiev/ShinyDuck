@@ -64,16 +64,27 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
         rv$projFolderFull <- inFolder
         rv$colData <- readRDS(file.path(inFolder, "colData.RDS"))
 
-        rv$txi <- readRDS(objfile)
-        rv$txi_tpms <- readRDS(file.path(inFolder, "txi_tpms.RDS"))
-        rv$txi_deseq <- readRDS(file.path(inFolder, "txi_deseq.RDS"))
-        rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
-        rv$res_DEGs_txi_deseq <- readRDS(file.path(inFolder, "res_DEGs_txi_deseq.RDS"))
-        rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
-        rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
-        #rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
-        rv$vst_data <- DESeq2::vst(rv$txi_deseq)
-        rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
+        withProgress(message = "Opening project...", value = 0, {
+
+          incProgress(0.15, detail = "Reading txi object")
+          rv$txi <- readRDS(objfile)
+
+          incProgress(0.2, detail = "Reading TPM matrices")
+          rv$txi_tpms <- readRDS(file.path(inFolder, "txi_tpms.RDS"))
+          rv$txi_deseq <- readRDS(file.path(inFolder, "txi_deseq.RDS"))
+          incProgress(0.35, detail = "Reading DESeq2 results")
+          rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
+          rv$res_DEGs_txi_deseq <- readRDS(file.path(inFolder, "res_DEGs_txi_deseq.RDS"))
+          rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
+          incProgress(0.15, detail = "Reading GO enrichments")
+          rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
+          #rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
+          incProgress(0.05, detail = "VST transforming txi data")
+          rv$vst_data <- DESeq2::vst(rv$txi_deseq)
+          rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
+          incProgress(0.1, detail = "Finished loading")
+
+        })
 
         if(rv$referenceGenomeChoice!=1){
           rv$OrgDeeBee <- org.Mm.eg.db::org.Mm.eg.db
