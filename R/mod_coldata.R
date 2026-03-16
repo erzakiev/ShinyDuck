@@ -135,6 +135,7 @@ mod_coldata_server <- function(id, rv) {
 
       # recalculating all the stuff as the basis of that
       reff <- as.character(rv$colData[which(rv$colData[,3]),2][1])
+      rv$colData$Group <- as.factor(rv$colData$Group)
       if(length(which(rv$colData[,3]))>0) rv$colData$Group <- relevel(x = rv$colData$Group, ref = reff)
       rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi, colData = rv$colData, design = ~Group)
 
