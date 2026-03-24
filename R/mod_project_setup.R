@@ -62,8 +62,8 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
 
         rv$app_state <- "ready"
         rv$projFolderFull <- inFolder
-        rv$colData <- readRDS(file.path(inFolder, "colData.RDS"))
-        rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
+        rv$colData <- readRDS(file.path(rv$projFolderFull, "colData.RDS"))
+        rv$referenceGenomeChoice <- readRDS(file.path(rv$projFolderFull, "referenceGenomeChoice.RDS"))
 
         if(rv$referenceGenomeChoice!=1){
           rv$OrgDeeBee <- org.Mm.eg.db::org.Mm.eg.db
@@ -77,7 +77,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           rv$txi <- readRDS(objfile)
 
 
-          txi_tpm_file <- file.path(inFolder, "txi_tpms.RDS")
+          txi_tpm_file <- file.path(rv$projFolderFull, "txi_tpms.RDS")
           if(file.exists(txi_tpm_file)){
             incProgress(0.2, detail = "Reading TPM matrices")
             rv$txi_tpms <- readRDS(txi_tpm_file)
@@ -87,7 +87,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             saveRDS(rv$txi_tpms, file = txi_tpm_file)
           }
 
-          txi_deseq_file <- file.path(inFolder, "txi_deseq.RDS")
+          txi_deseq_file <- file.path(rv$projFolderFull, "txi_deseq.RDS")
           if(file.exists(txi_deseq_file)){
             incProgress(0.2, detail = "Reading txi_deseq.RDS")
             rv$txi_deseq <- readRDS(txi_deseq_file)
@@ -100,9 +100,9 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           }
 
           incProgress(0.35, detail = "Reading DESeq2 results")
-          rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
+          rv$res_txi_deseq <- readRDS(file.path(rv$projFolderFull, "res_txi_deseq.RDS"))
 
-          res_DEGs_txi_deseq_file <- file.path(inFolder, "res_DEGs_txi_deseq.RDS")
+          res_DEGs_txi_deseq_file <- file.path(rv$projFolderFull, "res_DEGs_txi_deseq.RDS")
           if(file.exists(res_DEGs_txi_deseq_file)){
             incProgress(0.2, detail = "Reading res_DEGs_txi_deseq")
             rv$res_DEGs_txi_deseq <- readRDS(res_DEGs_txi_deseq_file)
@@ -112,7 +112,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             saveRDS(rv$res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file)
           }
 
-          txi_deseq_deseq_file <- file.path(inFolder, "txi_deseq_deseq.RDS")
+          txi_deseq_deseq_file <- file.path(rv$projFolderFull, "txi_deseq_deseq.RDS")
           if(file.exists(txi_deseq_deseq_file)){
             incProgress(0.2, detail = "Reading txi_deseq_deseq")
             rv$txi_deseq_deseq <- readRDS(txi_deseq_deseq_file)
@@ -124,7 +124,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
 
           incProgress(0.15, detail = "Reading GO enrichments...")
 
-          GO_result_file <- file.path(inFolder, "GO_result.RDS")
+          GO_result_file <- file.path(rv$projFolderFull, "GO_result.RDS")
           if(file.exists(GO_result_file)){
             incProgress(0.2, detail = "Reading GO enrichment results data")
             rv$GO_result <- readRDS(GO_result_file)
@@ -134,7 +134,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             saveRDS(rv$GO_result, file = GO_result_file)
           }
 
-          vst_file <- file.path(inFolder, "vst_data.RDS")
+          vst_file <- file.path(rv$projFolderFull, "vst_data.RDS")
           if(file.exists(vst_file)){
             incProgress(0.2, detail = "Reading VST transformed data")
             rv$vst_data <- readRDS(vst_file)
