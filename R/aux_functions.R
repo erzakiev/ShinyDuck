@@ -223,3 +223,12 @@ reshape_GO_result_for_xlsx <- function(){
   }
   return(toWrite)
 }
+
+calculate_txi_deseq_deseq_file(txi_deseq, colData){
+  matr <- txi_deseq
+  smallestGroupSize <- floor(min(table(colData$Group)))
+  keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
+  matr <- matr[keep,]
+  toRet <- DESeq2::DESeq(matr)
+  return(toRet)
+}

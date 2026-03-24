@@ -152,13 +152,10 @@ mod_coldata_server <- function(id, rv) {
         )
 
         incProgress(0.05, detail = 'Filtering lowly expressed genes before DEGs')
-        matr <- rv$txi_deseq
-        smallestGroupSize <- floor(min(table(rv$colData$Group)))
-        keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
-        matr <- matr[keep,]
+
+
         incProgress(0.05, detail = 'Recalculating txi_deseq_deseq')
-        toRet <- DESeq2::DESeq(matr)
-        rv$txi_deseq_deseq <- toRet
+        rv$txi_deseq_deseq <- calculate_txi_deseq_deseq_file(rv$txi_deseq, rv$colData)
 
         incProgress(0.05, detail = 'Saving txi_deseq_deseq')
         saveRDS(rv$txi_deseq_deseq,
@@ -190,8 +187,9 @@ mod_coldata_server <- function(id, rv) {
         #openxlsx::write.xlsx(toWrite, file = file.path(rv$projFolderFull,'GOs.xlsx'))
 
         incProgress(0.05, detail = 'Recalculating and saving vst_data')
+        rv$vst_data <- DESeq2::vst(rv$txi_deseq)
         saveRDS(
-          DESeq2::vst(rv$txi_deseq),
+          rv$vst_data,
           file = file.path(rv$projFolderFull, "vst_data.RDS")
         )
         message("colData rebased")
@@ -267,12 +265,7 @@ mod_coldata_server <- function(id, rv) {
         file = file.path(new_dir, "txi_deseq.RDS")
       )
 
-      matr <- txi_deseq
-      smallestGroupSize <- floor(min(table(colData_subset$Group)))
-      keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
-      matr <- matr[keep,]
-      toRet <- DESeq2::DESeq(matr)
-      txi_deseq_deseq <- toRet
+      txi_deseq_deseq <- calculate_txi_deseq_deseq_file(txi_deseq, colData_subset)
 
       saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
@@ -349,14 +342,9 @@ mod_coldata_server <- function(id, rv) {
         file = file.path(new_dir, "txi_deseq.RDS")
       )
 
-      matr <- txi_deseq
-      smallestGroupSize <- floor(min(table(colData_subset$Group)))
-      keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
-      matr <- matr[keep,]
-      toRet <- DESeq2::DESeq(matr)
-      txi_deseq_deseq <- toRet
+     txi_deseq_deseq <- calculate_txi_deseq_deseq_file(txi_deseq, colData_subset)
 
-      saveRDS(txi_deseq_deseq,
+     saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
 
       res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq)

@@ -105,24 +105,31 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           res_DEGs_txi_deseq_file <- file.path(inFolder, "res_DEGs_txi_deseq.RDS")
           if(file.exists(res_DEGs_txi_deseq_file)){
             incProgress(0.2, detail = "Reading res_DEGs_txi_deseq")
-            rv$vst_data <- readRDS(res_DEGs_txi_deseq_file)
+            rv$res_DEGs_txi_deseq <- readRDS(res_DEGs_txi_deseq_file)
           } else {
             incProgress(0.2, detail = "Calculating res_DEGs_txi_deseq and saving")
-            res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
-            saveRDS(res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file)
+            rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
+            saveRDS(rv$res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file)
           }
 
-          rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
-          incProgress(0.15, detail = "Reading GO enrichments")
+          txi_deseq_deseq_file <- file.path(inFolder, "txi_deseq_deseq.RDS")
+          if(file.exists(txi_deseq_deseq_file)){
+            incProgress(0.2, detail = "Reading txi_deseq_deseq")
+            rv$txi_deseq_deseq <- readRDS(txi_deseq_deseq_file)
+          } else {
+            incProgress(0.2, detail = "txi_deseq_deseq not detected, calculating and saving")
+            rv$txi_deseq_deseq <- calculate_txi_deseq_deseq_file(rv$txi_deseq, rv$colData)
+            saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file)
+          }
 
-
+          incProgress(0.15, detail = "Reading GO enrichments...")
 
           GO_result_file <- file.path(inFolder, "GO_result.RDS")
           if(file.exists(GO_result_file)){
             incProgress(0.2, detail = "Reading GO enrichment results data")
             rv$GO_result <- readRDS(GO_result_file)
           } else {
-            incProgress(0.2, detail = "Calculating GO enrichment results and saving")
+            incProgress(0.2, detail = "GO not detected; Calculating GO enrichment results and saving")
             rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
             saveRDS(rv$GO_result, file = GO_result_file)
           }
