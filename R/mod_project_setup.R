@@ -118,7 +118,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
 
 
           GO_result_file <- file.path(inFolder, "GO_result.RDS")
-          if(file.exists(vst_file)){
+          if(file.exists(GO_result_file)){
             incProgress(0.2, detail = "Reading GO enrichment results data")
             rv$GO_result <- readRDS(GO_result_file)
           } else {
