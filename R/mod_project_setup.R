@@ -63,14 +63,29 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
         rv$app_state <- "ready"
         rv$projFolderFull <- inFolder
         rv$colData <- readRDS(file.path(inFolder, "colData.RDS"))
+        rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
+
+        if(rv$referenceGenomeChoice!=1){
+          rv$OrgDeeBee <- org.Mm.eg.db::org.Mm.eg.db
+        } else {
+          rv$OrgDeeBee <- org.Hs.eg.db::org.Hs.eg.db
+        }
 
         withProgress(message = "Opening project...", value = 0, {
 
           incProgress(0.15, detail = "Reading txi object")
           rv$txi <- readRDS(objfile)
 
-          incProgress(0.2, detail = "Reading TPM matrices")
-          rv$txi_tpms <- readRDS(file.path(inFolder, "txi_tpms.RDS"))
+
+          txi_tpm_file <- file.path(inFolder, "txi_tpms.RDS")
+          if(file.exists(txi_tpm_file)){
+            incProgress(0.2, detail = "Reading TPM matrices")
+            rv$txi_tpms <- readRDS(txi_tpm_file)
+          } else {
+            incProgress(0.2, detail = "TPM matrix not detected, calculating and saving")
+            rv$txi_tpms <- calculate_txi_tpm(rv$txi, rv$OrgDeeBee, rv$colData)
+            saveRDS(rv$txi_tpms, file = txi_tpm_file)
+          }
           rv$txi_deseq <- readRDS(file.path(inFolder, "txi_deseq.RDS"))
           incProgress(0.35, detail = "Reading DESeq2 results")
           rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
@@ -81,16 +96,9 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           #rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
           incProgress(0.05, detail = "VST transforming txi data")
           rv$vst_data <- DESeq2::vst(rv$txi_deseq)
-          rv$referenceGenomeChoice <- readRDS(file.path(inFolder, "referenceGenomeChoice.RDS"))
           incProgress(0.1, detail = "Finished loading")
 
         })
-
-        if(rv$referenceGenomeChoice!=1){
-          rv$OrgDeeBee <- org.Mm.eg.db::org.Mm.eg.db
-        } else {
-          rv$OrgDeeBee <- org.Hs.eg.db::org.Hs.eg.db
-        }
 
         if(length(unique(rv$colData$Group))  > 2) {
           rv$multiple_groups <- 1
