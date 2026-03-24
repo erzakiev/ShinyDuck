@@ -86,7 +86,19 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             rv$txi_tpms <- calculate_txi_tpm(rv$txi, rv$OrgDeeBee, rv$colData)
             saveRDS(rv$txi_tpms, file = txi_tpm_file)
           }
-          rv$txi_deseq <- readRDS(file.path(inFolder, "txi_deseq.RDS"))
+
+          txi_deseq_file <- file.path(inFolder, "txi_deseq.RDS")
+          if(file.exists(txi_deseq_file)){
+            incProgress(0.2, detail = "Reading txi_deseq.RDS")
+            rv$txi_deseq <- readRDS(txi_deseq_file)
+          } else {
+            incProgress(0.2, detail = "txi_deseq not detected, calculating and saving")
+            rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi,
+                                                             colData = rv$colData,
+                                                             design = ~Group)
+            saveRDS(rv$txi_deseq, file = txi_deseq_file)
+          }
+
           incProgress(0.35, detail = "Reading DESeq2 results")
           rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
 
@@ -102,9 +114,20 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
 
           rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
           incProgress(0.15, detail = "Reading GO enrichments")
-          rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
-          #rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
-          vst_file <- file.path(inFolder, "txi_tpms.RDS")
+
+
+
+          GO_result_file <- file.path(inFolder, "GO_result.RDS")
+          if(file.exists(vst_file)){
+            incProgress(0.2, detail = "Reading GO enrichment results data")
+            rv$GO_result <- readRDS(GO_result_file)
+          } else {
+            incProgress(0.2, detail = "Calculating GO enrichment results and saving")
+            rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
+            saveRDS(rv$GO_result, file = GO_result_file)
+          }
+
+          vst_file <- file.path(inFolder, "vst_data.RDS")
           if(file.exists(vst_file)){
             incProgress(0.2, detail = "Reading VST transformed data")
             rv$vst_data <- readRDS(vst_file)

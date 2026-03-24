@@ -165,74 +165,29 @@ mod_coldata_server <- function(id, rv) {
                 file = file.path(rv$projFolderFull, 'txi_deseq_deseq.RDS'))
 
 
-        res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq)
-        saveRDS(res_txi_deseq,
-                file = file.path(new_dir, 'res_txi_deseq.RDS'))
-        openxlsx::write.xlsx(res_txi_deseq,
-                             file = file.path(new_dir,'DEGs_full.xlsx'))
+        rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq)
+        saveRDS(rv$res_txi_deseq,
+                file = file.path(rv$projFolderFull, 'res_txi_deseq.RDS'))
+        openxlsx::write.xlsx(rv$res_txi_deseq,
+                             file = file.path(rv$projFolderFull,'DEGs_full.xlsx'))
 
-        res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(res_txi_deseq)
+        rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
+        saveRDS(rv$res_DEGs_txi_deseq,
+                file = file.path(rv$projFolderFull, 'res_DEGs_txi_deseq.RDS'))
 
-        saveRDS(res_DEGs_txi_deseq,
-                file = file.path(new_dir, 'res_DEGs_txi_deseq.RDS'))
-        if(class(toRet)=="data.frame"){
-          openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
+        if(class(rv$res_DEGs_txi_deseq)=="data.frame"){
+          openxlsx::write.xlsx(as.data.frame(rv$res_DEGs_txi_deseq), file = file.path(rv$projFolderFull,'DEGs.xlsx'))
         } else {
-          openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
+          openxlsx::write.xlsx(rv$res_DEGs_txi_deseq, file = file.path(rv$projFolderFull,'DEGs.xlsx'))
         }
 
-
-        # recalculating GO_result
-        toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
-        if(class(rv$res_DEGs_txi_deseq)=='list'){
-          # multiple groups
-          for (i in 1:length(rv$res_DEGs_txi_deseq)){
-            tytl[[i]] <- paste(strsplit(names(rv$res_txi_deseq[i]), split = "_")[[1]][2:4], collapse=' ')
-            if(is.null(dim(rv$res_DEGs_txi_deseq[[i]]))){
-              toRet[[i]] <- NULL
-              toWrite[[i]] <- NULL
-            } else {
-              incProgress(0.05, detail = 'Recalculating the GO enrichments')
-              toRet[[i]] <- clusterProfiler::enrichGO(gene = rv$res_DEGs_txi_deseq[[i]][,2],
-                                                      keyType = "SYMBOL",
-                                                      OrgDb = rv$OrgDeeBee,
-                                                      ont = "BP",
-                                                      pAdjustMethod = "BH",
-                                                      qvalueCutoff = 0.05,
-                                                      readable = TRUE)
-
-              toWrite[[i]] <- as.data.frame(toRet[[i]])
-              toWrite[[i]]$geneID <- gsub(pattern='/', replacement=' ', toWrite[[i]]$geneID)
-            }
-          }
-          names(toRet) <- unlist(tytl)
-          incProgress(0.05, detail = 'Saving the GO enrichments')
-          saveRDS(toRet, file = file.path(rv$projFolderFull,'GO_result.RDS'))
-          rv$GO_result <- toRet
-          names(toRet) <- gsub(pattern = 'Group ', replacement = '', x = names(toRet))
-          names(toRet) <- substr(names(toRet), start = 1, stop = 30)
-          incProgress(0.05, detail = 'Writing the GOs.xlsx')
-          openxlsx::write.xlsx(toWrite, file = file.path(rv$projFolderFull,'GOs.xlsx'))
-          return(toRet)
-
-        } else {
-          # 1 vs 1
-          incProgress(0.05, detail = 'Recalculating the GO enrichments')
-          toRet <- clusterProfiler::enrichGO(gene = rv$res_DEGs_txi_deseq[,2],
-                                             keyType = "SYMBOL",
-                                             OrgDb = rv$OrgDeeBee,
-                                             ont = "BP",
-                                             pAdjustMethod = "BH",
-                                             qvalueCutoff = 0.05,
-                                             readable = TRUE)
-          incProgress(0.05, detail = 'Saving the GO enrichments')
-          saveRDS(toRet, file = file.path(rv$projFolderFull,'GO_result.RDS'))
-          rv$GO_result <- toRet
-          toWrite <- as.data.frame(toRet)
-          toWrite$geneID <- gsub(pattern='/', replacement=' ', toWrite$geneID)
-          openxlsx::write.xlsx(toWrite, file = file.path(rv$projFolderFull,'GOs.xlsx'))
-          return(toRet)
-        }
+        incProgress(0.05, detail = 'Recalculating and saving GO_result')
+        rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
+        saveRDS(
+          rv$GO_result,
+          file = file.path(rv$projFolderFull, "GO_result.RDS")
+        )
+        #openxlsx::write.xlsx(toWrite, file = file.path(rv$projFolderFull,'GOs.xlsx'))
 
         incProgress(0.05, detail = 'Recalculating and saving vst_data')
         saveRDS(

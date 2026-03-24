@@ -223,13 +223,3 @@ reshape_GO_result_for_xlsx <- function(){
   }
   return(toWrite)
 }
-
-#res_counts<-txi()$counts
-#res_counts <- data.frame(ENSEMBL=rownames(res_counts), res_counts)
-#annots2 <- AnnotationDbi::select(OrgDeeBee(), keys=rownames(res_counts),
-#                                 columns="SYMBOL", keytype="ENSEMBL")
-#result_counts <- merge(annots2, res_counts, by.x="ENSEMBL", by.y="ENSEMBL")
-#result_counts <- rbind(c('-','-',colDatt$data$Group),result_counts)
-#openxlsx::write.xlsx(result_counts, file = paste0(ProjFolderFull(), '/Counts.xlsx'))
-
-
