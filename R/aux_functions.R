@@ -69,6 +69,161 @@ calculate_txi_tpm <- function(txi, orgdb, colData){
 
 }
 
+calculate_res_txi_deseq <- function(txi_deseq_deseq){
+
+  toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
+  if(length(DESeq2::resultsNames(txi_deseq_deseq))<=2){
+    toRet <- DESeq2::results(txi_deseq_deseq)
+    toRet$log10padj <- log10(toRet$padj)
+    toRet$Significance <- 'Non-significant'
+    toRet$Significance[toRet$padj<0.05] <- 'Significant (padj < 0.05)'
+
+    toRet2 <- data.frame(ENSEMBL=rownames(toRet),
+                         toRet[,1:2],
+                         abs_log2FoldChange=abs(toRet[,2]),toRet[,3:ncol(toRet)])
+    annots <- AnnotationDbi::select(rv$OrgDeeBee, keys=rownames(toRet2),
+                                    columns="SYMBOL", keytype="ENSEMBL")
+
+    toRet3 <- merge(annots, toRet2, by.x="ENSEMBL", by.y="ENSEMBL")
+    toRet3 <- toRet3[order(toRet3$padj),]
+
+  }  else {
+    toRet3 <- toRet <- list()
+    for (i in 2:length(DESeq2::resultsNames(txi_deseq_deseq))){
+      toRet[[(i-1)]] <- DESeq2::results(txi_deseq_deseq, name = DESeq2::resultsNames(txi_deseq_deseq)[i] )
+      toRet[[(i-1)]]$log10padj <- log10( toRet[[(i-1)]]$padj)
+      toRet[[(i-1)]]$Significance <- 'Non-significant'
+      toRet[[(i-1)]]$Significance[ toRet[[(i-1)]]$padj<0.05] <- 'Significant (padj < 0.05)'
+
+      toRet2 <- data.frame(ENSEMBL=rownames(toRet[[(i-1)]]),
+                           toRet[[(i-1)]][,1:2],
+                           abs_log2FoldChange=abs(toRet[[(i-1)]][,2]),toRet[[(i-1)]][,3:ncol(toRet[[(i-1)]])])
+
+      annots <- AnnotationDbi::select(rv$OrgDeeBee, keys=rownames(toRet2),
+                                      columns="SYMBOL", keytype="ENSEMBL")
+
+      toRet3[[(i-1)]] <- merge(annots,
+                               toRet2,
+                               by.x="ENSEMBL",
+                               by.y="ENSEMBL")
+      toRet3[[(i-1)]] <- toRet3[[(i-1)]][order(toRet3[[(i-1)]]$padj),]
+
+    }
+    names(toRet3) <- DESeq2::resultsNames(txi_deseq_deseq)[2:length(DESeq2::resultsNames(txi_deseq_deseq))]
+  }
+  return(toRet3)
+}
+
+calculate_res_DEGs_txi_deseq <- function(res_txi_deseq){
+
+  toRet <- res_txi_deseq
+  if(class(toRet)=="data.frame"){
+    toRet <- toRet[which(toRet$padj<0.05),]
+    if(nrow(toRet)==0) return({as.data.frame("oops, none significant")})
+    toRet <- toRet[order(toRet$padj),]
+  } else {
+    for (i in 1:length(toRet)){
+      toRet[[i]] <- toRet[[i]][which(toRet[[i]]$padj<0.05),]
+      if(nrow(toRet[[i]])==0){
+        toRet[[i]] <- "oops, none significant"
+      }
+      else {
+        toRet[[i]] <- toRet[[i]][order(toRet[[i]]$padj),]
+      }
+    }
+  }
+  return(toRet)
+}
+
+calculate_GO_result <- function(res_DEGs_txi_deseq, orgdb){
+  toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
+  if(class(res_DEGs_txi_deseq)=='list'){
+    # multiple groups
+    for (i in 1:length(res_DEGs_txi_deseq)){
+      tytl[[i]] <- gsub(pattern = 'Group_', replacement = '', names(res_DEGs_txi_deseq[i]))
+      if(is.null(dim(res_DEGs_txi_deseq[[i]]))){
+        toRet[[i]] <- NULL
+        toWrite[[i]] <- NULL
+      } else {
+        incProgress(0.05, detail = 'Recalculating the GO enrichments')
+        toRet[[i]] <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[[i]][,2],
+                                                keyType = "SYMBOL",
+                                                OrgDb = orgdb,
+                                                ont = "BP",
+                                                pAdjustMethod = "BH",
+                                                qvalueCutoff = 0.05,
+                                                readable = TRUE)
+      }
+    }
+    names(toRet) <- unlist(tytl)
+  } else {
+    # 1 vs 1
+    toRet <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[,2],
+                                       keyType = "SYMBOL",
+                                       OrgDb = orgdb,
+                                       ont = "BP",
+                                       pAdjustMethod = "BH",
+                                       qvalueCutoff = 0.05,
+                                       readable = TRUE)
+  }
+  return(toRet)
+}
+
+reshape_GO_result_for_xlsx <- function(){
+  toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
+  if(class(res_DEGs_txi_deseq)=='list'){
+    # multiple groups
+    for (i in 1:length(res_DEGs_txi_deseq)){
+      tytl[[i]] <- gsub(pattern = 'Group_', replacement = '', names(res_DEGs_txi_deseq[i]))
+      if(is.null(dim(res_DEGs_txi_deseq[[i]]))){
+        toRet[[i]] <- NULL
+        toWrite[[i]] <- NULL
+      } else {
+        incProgress(0.05, detail = 'Recalculating the GO enrichments')
+        toRet[[i]] <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[[i]][,2],
+                                                keyType = "SYMBOL",
+                                                OrgDb = orgdb,
+                                                ont = "BP",
+                                                pAdjustMethod = "BH",
+                                                qvalueCutoff = 0.05,
+                                                readable = TRUE)
+
+        toWrite[[i]] <- as.data.frame(toRet[[i]])
+        toWrite[[i]]$geneID <- gsub(pattern='/', replacement=' ', toWrite[[i]]$geneID)
+      }
+    }
+    names(toRet) <- unlist(tytl)
+    return(toRet)
+
+    incProgress(0.05, detail = 'Saving the GO enrichments')
+    saveRDS(toRet, file = file.path(new_dir,'GO_result.RDS'))
+    rv$GO_result <- toRet
+    names(toRet) <- gsub(pattern = 'Group ', replacement = '', x = names(toRet))
+    names(toRet) <- substr(names(toRet), start = 1, stop = 30)
+    incProgress(0.05, detail = 'Writing the GOs.xlsx')
+    openxlsx::write.xlsx(toWrite, file = file.path(new_dir,'GOs.xlsx'))
+    return(toRet)
+
+  } else {
+    # 1 vs 1
+    incProgress(0.05, detail = 'Recalculating the GO enrichments')
+    toRet <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[,2],
+                                       keyType = "SYMBOL",
+                                       OrgDb = rv$OrgDeeBee,
+                                       ont = "BP",
+                                       pAdjustMethod = "BH",
+                                       qvalueCutoff = 0.05,
+                                       readable = TRUE)
+    incProgress(0.05, detail = 'Saving the GO enrichments')
+    saveRDS(toRet, file = file.path(new_dir,'GO_result.RDS'))
+    rv$GO_result <- toRet
+    toWrite <- as.data.frame(toRet)
+    toWrite$geneID <- gsub(pattern='/', replacement=' ', toWrite$geneID)
+    openxlsx::write.xlsx(toWrite, file = file.path(new_dir,'GOs.xlsx'))
+  }
+  return(toWrite)
+}
+
 #res_counts<-txi()$counts
 #res_counts <- data.frame(ENSEMBL=rownames(res_counts), res_counts)
 #annots2 <- AnnotationDbi::select(OrgDeeBee(), keys=rownames(res_counts),

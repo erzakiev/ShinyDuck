@@ -94,8 +94,15 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           incProgress(0.15, detail = "Reading GO enrichments")
           rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
           #rv$vst_data <- readRDS(file.path(inFolder, "vst_data.RDS"))
-          incProgress(0.05, detail = "VST transforming txi data")
-          rv$vst_data <- DESeq2::vst(rv$txi_deseq)
+          vst_file <- file.path(inFolder, "txi_tpms.RDS")
+          if(file.exists(vst_file)){
+            incProgress(0.2, detail = "Reading VST transformed data")
+            rv$vst_data <- readRDS(vst_file)
+          } else {
+            incProgress(0.2, detail = "VST transforming txi data and saving")
+            rv$vst_data <- DESeq2::vst(rv$txi_deseq)
+            saveRDS(rv$vst_data, file = vst_file)
+          }
           incProgress(0.1, detail = "Finished loading")
 
         })
