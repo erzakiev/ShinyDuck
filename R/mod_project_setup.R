@@ -89,7 +89,17 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           rv$txi_deseq <- readRDS(file.path(inFolder, "txi_deseq.RDS"))
           incProgress(0.35, detail = "Reading DESeq2 results")
           rv$res_txi_deseq <- readRDS(file.path(inFolder, "res_txi_deseq.RDS"))
-          rv$res_DEGs_txi_deseq <- readRDS(file.path(inFolder, "res_DEGs_txi_deseq.RDS"))
+
+          res_DEGs_txi_deseq_file <- file.path(inFolder, "res_DEGs_txi_deseq.RDS")
+          if(file.exists(res_DEGs_txi_deseq_file)){
+            incProgress(0.2, detail = "Reading res_DEGs_txi_deseq")
+            rv$vst_data <- readRDS(res_DEGs_txi_deseq_file)
+          } else {
+            incProgress(0.2, detail = "Calculating res_DEGs_txi_deseq and saving")
+            res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
+            saveRDS(res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file)
+          }
+
           rv$txi_deseq_deseq <- readRDS(file.path(inFolder, "txi_deseq_deseq.RDS"))
           incProgress(0.15, detail = "Reading GO enrichments")
           rv$GO_result <- readRDS(file.path(inFolder, "GO_result.RDS"))
