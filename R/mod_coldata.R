@@ -344,7 +344,7 @@ mod_coldata_server <- function(id, rv) {
                                        rv$OrgDeeBee)
       saveRDS(GO_result,
               file = file.path(new_dir, 'GO_result.RDS'))
-      openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
+      #openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
 
       saveRDS(
         DESeq2::vst(txi_deseq),
@@ -426,7 +426,7 @@ mod_coldata_server <- function(id, rv) {
                                        rv$OrgDeeBee)
       saveRDS(GO_result,
               file = file.path(new_dir, 'GO_result.RDS'))
-      openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
+      #openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
 
       saveRDS(
         DESeq2::vst(txi_deseq),
