@@ -162,7 +162,7 @@ mod_coldata_server <- function(id, rv) {
                 file = file.path(rv$projFolderFull, 'txi_deseq_deseq.RDS'))
 
 
-        rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq)
+        rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
         saveRDS(rv$res_txi_deseq,
                 file = file.path(rv$projFolderFull, 'res_txi_deseq.RDS'))
         openxlsx::write.xlsx(rv$res_txi_deseq,
@@ -271,7 +271,7 @@ mod_coldata_server <- function(id, rv) {
       saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
 
-      res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq)
+      res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
       saveRDS(res_txi_deseq,
               file = file.path(new_dir, 'res_txi_deseq.RDS'))
       openxlsx::write.xlsx(res_txi_deseq,
@@ -349,7 +349,7 @@ mod_coldata_server <- function(id, rv) {
      saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
 
-      res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq)
+      res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
       saveRDS(res_txi_deseq,
               file = file.path(new_dir, 'res_txi_deseq.RDS'))
       openxlsx::write.xlsx(res_txi_deseq,
