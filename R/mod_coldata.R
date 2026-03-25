@@ -250,56 +250,62 @@ mod_coldata_server <- function(id, rv) {
       new_dir <- file.path(dirname(rv$projFolderFull), foldr)
       dir.create(new_dir, showWarnings = FALSE)
 
-      saveRDS(txi_subset, file.path(new_dir, "txi.RDS"))
-      saveRDS(colData_subset, file.path(new_dir, "colData.RDS"))
-      saveRDS(rv$referenceGenomeChoice,
-              file.path(new_dir, "referenceGenomeChoice.RDS"))
+      withProgress(message = "Forking...", value = 0, {
+        incProgress(0.05, detail = 'saving new txi object')
+        saveRDS(txi_subset, file.path(new_dir, "txi.RDS"))
+        saveRDS(colData_subset, file.path(new_dir, "colData.RDS"))
+        saveRDS(rv$referenceGenomeChoice,
+                file.path(new_dir, "referenceGenomeChoice.RDS"))
 
+        reff <- as.character(colData_subset[which(colData_subset[,3]),2][1])
+        colData_subset$Group <- as.factor(colData_subset$Group)
+        if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)
+        incProgress(0.05, detail = 'recreating and saving the new txi_deseq object')
+        txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, colData = colData_subset, design = ~Group)
 
-      reff <- as.character(colData_subset[which(colData_subset[,3]),2][1])
-      colData_subset$Group <- as.factor(colData_subset$Group)
-      if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)
-      txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, colData = colData_subset, design = ~Group)
+        saveRDS(
+          txi_deseq,
+          file = file.path(new_dir, "txi_deseq.RDS")
+        )
 
-      saveRDS(
-        txi_deseq,
-        file = file.path(new_dir, "txi_deseq.RDS")
-      )
+        incProgress(0.05, detail = 'calculating and saving the new txi_deseq_deseq object')
+        txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
+        saveRDS(txi_deseq_deseq,
+                file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
 
-      txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
+        incProgress(0.05, detail = 'calculating and saving the new res_txi_deseq object')
+        res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
+        saveRDS(res_txi_deseq,
+                file = file.path(new_dir, 'res_txi_deseq.RDS'))
+        openxlsx::write.xlsx(res_txi_deseq,
+                             file = file.path(new_dir,'DEGs_full.xlsx'))
 
-      saveRDS(txi_deseq_deseq,
-              file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
+        incProgress(0.05, detail = 'calculating and saving the new res_DEGs_txi_deseq object')
+        res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(res_txi_deseq)
+        saveRDS(res_DEGs_txi_deseq,
+                file = file.path(new_dir, 'res_DEGs_txi_deseq.RDS'))
 
-      res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
-      saveRDS(res_txi_deseq,
-              file = file.path(new_dir, 'res_txi_deseq.RDS'))
-      openxlsx::write.xlsx(res_txi_deseq,
-                           file = file.path(new_dir,'DEGs_full.xlsx'))
+        if(class(toRet)=="data.frame"){
+          openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
+        } else {
+          openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
+        }
 
-      res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(res_txi_deseq)
+        # recalculating GO_result
 
-      saveRDS(res_DEGs_txi_deseq,
-              file = file.path(new_dir, 'res_DEGs_txi_deseq.RDS'))
-      if(class(toRet)=="data.frame"){
-        openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
-      } else {
-        openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
-      }
+        incProgress(0.05, detail = 'calculating and saving the new GO_result object')
+        GO_result <- calculate_GO_result(res_DEGs_txi_deseq,
+                                         rv$OrgDeeBee)
+        saveRDS(GO_result,
+                file = file.path(new_dir, 'GO_result.RDS'))
+        #openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
 
-      # recalculating GO_result
-
-      GO_result <- calculate_GO_result(res_DEGs_txi_deseq,
-                                       rv$OrgDeeBee)
-      saveRDS(GO_result,
-              file = file.path(new_dir, 'GO_result.RDS'))
-      #openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
-
-      saveRDS(
-        DESeq2::vst(txi_deseq),
-        file = file.path(new_dir, "vst_data.RDS")
-      )
-      message("colData rebased")
+        incProgress(0.5, detail = 'calculating and saving the new vst_data object')
+        saveRDS(
+          DESeq2::vst(txi_deseq),
+          file = file.path(new_dir, "vst_data.RDS")
+        )
+      })
 
       output$forkingfeedback <- renderText(
         paste0("Successfully copied samples into folder ", foldr)
@@ -329,14 +335,17 @@ mod_coldata_server <- function(id, rv) {
       colData_subset$Control <- FALSE
       colData_subset$Control[1] <- TRUE
 
-      saveRDS(txi_subset, file.path(new_dir, "txi.RDS"))
-      saveRDS(colData_subset, file.path(new_dir, "colData.RDS"))
-      saveRDS(rv$referenceGenomeChoice,
+      withProgress(message = "Forking...", value = 0, {
+        incProgress(0.05, detail = 'saving new txi object')
+        saveRDS(txi_subset, file.path(new_dir, "txi.RDS"))
+        saveRDS(colData_subset, file.path(new_dir, "colData.RDS"))
+        saveRDS(rv$referenceGenomeChoice,
               file.path(new_dir, "referenceGenomeChoice.RDS"))
 
       reff <- as.character(colData_subset[which(colData_subset[,3]),2][1])
       colData_subset$Group <- as.factor(colData_subset$Group)
       if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)
+      incProgress(0.05, detail = 'recreating and saving the new txi_deseq object')
       txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, colData = colData_subset, design = ~Group)
 
       saveRDS(
@@ -344,21 +353,23 @@ mod_coldata_server <- function(id, rv) {
         file = file.path(new_dir, "txi_deseq.RDS")
       )
 
+    incProgress(0.05, detail = 'calculating and saving the new txi_deseq_deseq object')
      txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
-
      saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
 
+     incProgress(0.05, detail = 'calculating and saving the new res_txi_deseq object')
       res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
       saveRDS(res_txi_deseq,
               file = file.path(new_dir, 'res_txi_deseq.RDS'))
       openxlsx::write.xlsx(res_txi_deseq,
                            file = file.path(new_dir,'DEGs_full.xlsx'))
 
+      incProgress(0.05, detail = 'calculating and saving the new res_DEGs_txi_deseq object')
       res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(res_txi_deseq)
-
       saveRDS(res_DEGs_txi_deseq,
               file = file.path(new_dir, 'res_DEGs_txi_deseq.RDS'))
+
       if(class(toRet)=="data.frame"){
         openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
       } else {
@@ -367,18 +378,19 @@ mod_coldata_server <- function(id, rv) {
 
       # recalculating GO_result
 
+      incProgress(0.05, detail = 'calculating and saving the new GO_result object')
       GO_result <- calculate_GO_result(res_DEGs_txi_deseq,
                                        rv$OrgDeeBee)
       saveRDS(GO_result,
               file = file.path(new_dir, 'GO_result.RDS'))
       #openxlsx::write.xlsx(reshape_GO_result_for_xlsx(GO_result), file = file.path(new_dir,'GOs.xlsx'))
 
+      incProgress(0.5, detail = 'calculating and saving the new vst_data object')
       saveRDS(
         DESeq2::vst(txi_deseq),
         file = file.path(new_dir, "vst_data.RDS")
       )
-      message("colData rebased")
-
+    })
 
 
       output$forkingfeedback <- renderText(
