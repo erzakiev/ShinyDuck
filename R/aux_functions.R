@@ -69,7 +69,7 @@ calculate_txi_tpm <- function(txi, orgdb, colData){
 
 }
 
-calculate_res_txi_deseq <- function(txi_deseq_deseq){
+calculate_res_txi_deseq <- function(txi_deseq_deseq, orgdb){
 
   toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
   if(length(DESeq2::resultsNames(txi_deseq_deseq))<=2){
@@ -81,7 +81,7 @@ calculate_res_txi_deseq <- function(txi_deseq_deseq){
     toRet2 <- data.frame(ENSEMBL=rownames(toRet),
                          toRet[,1:2],
                          abs_log2FoldChange=abs(toRet[,2]),toRet[,3:ncol(toRet)])
-    annots <- AnnotationDbi::select(rv$OrgDeeBee, keys=rownames(toRet2),
+    annots <- AnnotationDbi::select(orgdb, keys=rownames(toRet2),
                                     columns="SYMBOL", keytype="ENSEMBL")
 
     toRet3 <- merge(annots, toRet2, by.x="ENSEMBL", by.y="ENSEMBL")
@@ -99,7 +99,7 @@ calculate_res_txi_deseq <- function(txi_deseq_deseq){
                            toRet[[(i-1)]][,1:2],
                            abs_log2FoldChange=abs(toRet[[(i-1)]][,2]),toRet[[(i-1)]][,3:ncol(toRet[[(i-1)]])])
 
-      annots <- AnnotationDbi::select(rv$OrgDeeBee, keys=rownames(toRet2),
+      annots <- AnnotationDbi::select(orgdb, keys=rownames(toRet2),
                                       columns="SYMBOL", keytype="ENSEMBL")
 
       toRet3[[(i-1)]] <- merge(annots,
@@ -169,7 +169,7 @@ calculate_GO_result <- function(res_DEGs_txi_deseq, orgdb){
   return(toRet)
 }
 
-reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq){
+reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq, orgdb){
   toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
   if(class(res_DEGs_txi_deseq)=='list'){
     # multiple groups
@@ -197,7 +197,6 @@ reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq){
 
     incProgress(0.05, detail = 'Saving the GO enrichments')
     saveRDS(toRet, file = file.path(new_dir,'GO_result.RDS'))
-    rv$GO_result <- toRet
     names(toRet) <- gsub(pattern = 'Group ', replacement = '', x = names(toRet))
     names(toRet) <- substr(names(toRet), start = 1, stop = 30)
     incProgress(0.05, detail = 'Writing the GOs.xlsx')
@@ -209,14 +208,13 @@ reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq){
     incProgress(0.05, detail = 'Recalculating the GO enrichments')
     toRet <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[,2],
                                        keyType = "SYMBOL",
-                                       OrgDb = rv$OrgDeeBee,
+                                       OrgDb = orgdb,
                                        ont = "BP",
                                        pAdjustMethod = "BH",
                                        qvalueCutoff = 0.05,
                                        readable = TRUE)
     incProgress(0.05, detail = 'Saving the GO enrichments')
     saveRDS(toRet, file = file.path(new_dir,'GO_result.RDS'))
-    rv$GO_result <- toRet
     toWrite <- as.data.frame(toRet)
     toWrite$geneID <- gsub(pattern='/', replacement=' ', toWrite$geneID)
     openxlsx::write.xlsx(toWrite, file = file.path(new_dir,'GOs.xlsx'))
