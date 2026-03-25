@@ -222,7 +222,7 @@ reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq, orgdb){
   return(toWrite)
 }
 
-calculate_txi_deseq_deseq_file <- function(txi_deseq, colData){
+calculate_txi_deseq_deseq <- function(txi_deseq, colData){
   matr <- txi_deseq
   smallestGroupSize <- floor(min(table(colData$Group)))
   keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
