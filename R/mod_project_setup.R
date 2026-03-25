@@ -99,8 +99,30 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             saveRDS(rv$txi_deseq, file = txi_deseq_file)
           }
 
-          incProgress(0.35, detail = "Reading DESeq2 results")
-          rv$res_txi_deseq <- readRDS(file.path(rv$projFolderFull, "res_txi_deseq.RDS"))
+
+
+          txi_deseq_deseq_file <- file.path(rv$projFolderFull, "txi_deseq_deseq.RDS")
+          if(file.exists(txi_deseq_deseq_file)){
+            incProgress(0.2, detail = "Reading txi_deseq_deseq.RDS")
+            rv$txi_deseq_deseq <- readRDS(txi_deseq_deseq_file)
+          } else {
+            incProgress(0.2, detail = "txi_deseq_deseq not detected, calculating and saving")
+            rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData)
+            saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file)
+          }
+
+          res_txi_deseq_file <- file.path(rv$projFolderFull, "res_txi_deseq.RDS")
+          if(file.exists(res_txi_deseq_file)){
+            incProgress(0.35, detail = "Reading DESeq2 results")
+            rv$res_txi_deseq <- readRDS(res_txi_deseq_file)
+          } else {
+            incProgress(0.35, detail = "DESeq2 not detected, calculating and saving")
+            rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
+              DESeq2::DESeqDataSetFromTximport(rv$txi,
+                                                             colData = rv$colData,
+                                                             design = ~Group)
+            saveRDS(rv$res_txi_deseq, file = res_txi_deseq_file)
+          }
 
           res_DEGs_txi_deseq_file <- file.path(rv$projFolderFull, "res_DEGs_txi_deseq.RDS")
           if(file.exists(res_DEGs_txi_deseq_file)){
