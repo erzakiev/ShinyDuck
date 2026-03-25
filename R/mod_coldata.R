@@ -155,7 +155,7 @@ mod_coldata_server <- function(id, rv) {
 
 
         incProgress(0.05, detail = 'Recalculating txi_deseq_deseq')
-        rv$txi_deseq_deseq <- calculate_txi_deseq_deseq_file(rv$txi_deseq, rv$colData)
+        rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData)
 
         incProgress(0.05, detail = 'Saving txi_deseq_deseq')
         saveRDS(rv$txi_deseq_deseq,
@@ -257,6 +257,7 @@ mod_coldata_server <- function(id, rv) {
 
 
       reff <- as.character(colData_subset[which(colData_subset[,3]),2][1])
+      colData_subset$Group <- as.factor(colData_subset$Group)
       if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)
       txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, colData = colData_subset, design = ~Group)
 
@@ -265,7 +266,7 @@ mod_coldata_server <- function(id, rv) {
         file = file.path(new_dir, "txi_deseq.RDS")
       )
 
-      txi_deseq_deseq <- calculate_txi_deseq_deseq_file(txi_deseq, colData_subset)
+      txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
 
       saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
@@ -334,6 +335,7 @@ mod_coldata_server <- function(id, rv) {
               file.path(new_dir, "referenceGenomeChoice.RDS"))
 
       reff <- as.character(colData_subset[which(colData_subset[,3]),2][1])
+      colData_subset$Group <- as.factor(colData_subset$Group)
       if(length(which(colData_subset[,3]))>0) colData_subset$Group <- relevel(x = colData_subset$Group, ref = reff)
       txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, colData = colData_subset, design = ~Group)
 
@@ -342,7 +344,7 @@ mod_coldata_server <- function(id, rv) {
         file = file.path(new_dir, "txi_deseq.RDS")
       )
 
-     txi_deseq_deseq <- calculate_txi_deseq_deseq_file(txi_deseq, colData_subset)
+     txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
 
      saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'))
