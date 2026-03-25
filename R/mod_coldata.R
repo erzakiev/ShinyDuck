@@ -165,18 +165,17 @@ mod_coldata_server <- function(id, rv) {
         rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
         saveRDS(rv$res_txi_deseq,
                 file = file.path(rv$projFolderFull, 'res_txi_deseq.RDS'))
-        openxlsx::write.xlsx(rv$res_txi_deseq,
-                             file = file.path(rv$projFolderFull,'DEGs_full.xlsx'))
+        #openxlsx::write.xlsx(rv$res_txi_deseq, file = file.path(rv$projFolderFull,'DEGs_full.xlsx'))
 
         rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
         saveRDS(rv$res_DEGs_txi_deseq,
                 file = file.path(rv$projFolderFull, 'res_DEGs_txi_deseq.RDS'))
 
-        if(class(rv$res_DEGs_txi_deseq)=="data.frame"){
-          openxlsx::write.xlsx(as.data.frame(rv$res_DEGs_txi_deseq), file = file.path(rv$projFolderFull,'DEGs.xlsx'))
-        } else {
-          openxlsx::write.xlsx(rv$res_DEGs_txi_deseq, file = file.path(rv$projFolderFull,'DEGs.xlsx'))
-        }
+        #if(class(rv$res_DEGs_txi_deseq)=="data.frame"){
+        #  openxlsx::write.xlsx(as.data.frame(rv$res_DEGs_txi_deseq), file = file.path(rv$projFolderFull,'DEGs.xlsx'))
+        #} else {
+        #  openxlsx::write.xlsx(rv$res_DEGs_txi_deseq, file = file.path(rv$projFolderFull,'DEGs.xlsx'))
+        #}
 
         incProgress(0.05, detail = 'Recalculating and saving GO_result')
         rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
@@ -277,19 +276,18 @@ mod_coldata_server <- function(id, rv) {
         res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
         saveRDS(res_txi_deseq,
                 file = file.path(new_dir, 'res_txi_deseq.RDS'))
-        openxlsx::write.xlsx(res_txi_deseq,
-                             file = file.path(new_dir,'DEGs_full.xlsx'))
+        #openxlsx::write.xlsx(res_txi_deseq, file = file.path(new_dir,'DEGs_full.xlsx'))
 
         incProgress(0.05, detail = 'calculating and saving the new res_DEGs_txi_deseq object')
         res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(res_txi_deseq)
         saveRDS(res_DEGs_txi_deseq,
                 file = file.path(new_dir, 'res_DEGs_txi_deseq.RDS'))
 
-        if(class(toRet)=="data.frame"){
-          openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
-        } else {
-          openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
-        }
+        #if(class(toRet)=="data.frame"){
+       #   openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
+        #} else {
+        #  openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
+        #}
 
         # recalculating GO_result
 
@@ -362,19 +360,18 @@ mod_coldata_server <- function(id, rv) {
       res_txi_deseq <- calculate_res_txi_deseq(txi_deseq_deseq, rv$OrgDeeBee)
       saveRDS(res_txi_deseq,
               file = file.path(new_dir, 'res_txi_deseq.RDS'))
-      openxlsx::write.xlsx(res_txi_deseq,
-                           file = file.path(new_dir,'DEGs_full.xlsx'))
+      #openxlsx::write.xlsx(res_txi_deseq, file = file.path(new_dir,'DEGs_full.xlsx'))
 
       incProgress(0.05, detail = 'calculating and saving the new res_DEGs_txi_deseq object')
       res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(res_txi_deseq)
       saveRDS(res_DEGs_txi_deseq,
               file = file.path(new_dir, 'res_DEGs_txi_deseq.RDS'))
 
-      if(class(toRet)=="data.frame"){
-        openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
-      } else {
-        openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
-      }
+      #if(class(toRet)=="data.frame"){
+        #openxlsx::write.xlsx(as.data.frame(toRet), file = file.path(new_dir,'DEGs.xlsx'))
+      #} else {
+        #openxlsx::write.xlsx(toRet, file = file.path(new_dir,'DEGs.xlsx'))
+      #}
 
       # recalculating GO_result
 
