@@ -169,7 +169,7 @@ calculate_GO_result <- function(res_DEGs_txi_deseq, orgdb){
   return(toRet)
 }
 
-reshape_GO_result_for_xlsx <- function(){
+reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq){
   toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
   if(class(res_DEGs_txi_deseq)=='list'){
     # multiple groups
@@ -224,7 +224,7 @@ reshape_GO_result_for_xlsx <- function(){
   return(toWrite)
 }
 
-calculate_txi_deseq_deseq_file(txi_deseq, colData){
+calculate_txi_deseq_deseq_file <- function(txi_deseq, colData){
   matr <- txi_deseq
   smallestGroupSize <- floor(min(table(colData$Group)))
   keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
