@@ -11,6 +11,17 @@ format_df_numbers <- function(df,
     sci_threshold = sci_threshold
   )
 
+  df[num_cols] <- lapply(
+    df[num_cols],
+    as.numeric
+  )
+
+  signif_cols <- grep(colnames(df), pattern = 'signif', value = T, ignore.case = T)
+  if(length(signif_cols)>0){
+    for (i in 1:length(signif_cols)){
+      df[,signif_cols[i]] <- as.factor(df[,signif_cols[i]])
+    }
+  }
   df
 }
 
@@ -53,19 +64,27 @@ convertVectEns2Symb <- function(vect, orgdb){
 }
 
 convertDfRownamesEns2Symb <- function(df, orgdb){
-  rownames(df) <- as.vector(convertVectEns2Symb(rownames(df), orgdb))
+  rownames(df) <- make.unique(as.vector(convertVectEns2Symb(rownames(df), orgdb)))
   return(df)
 }
 
 
-calculate_txi_tpm <- function(txi, orgdb, colData){
+#calculate_txi_tpm <- function(txi, colData, orgdb){
+#
+#  res<-txi$abundance
+#  res <- data.frame(ENSEMBL=rownames(res), res)
+#  annots <- convertVectEns2Symb(rownames(res), orgdb = orgdb)
+#  result <- cbind(annots, res)
+#  result <- rbind(c('-','-',colData$Group),result)
+#  return(result)
+#
+#}
+
+calculate_txi_tpm <- function(txi, orgdb){
 
   res<-txi$abundance
-  res <- data.frame(ENSEMBL=rownames(res), res)
-  annots <- convertVectEns2Symb(rownames(res), orgdb = orgdb)
-  result <- cbind(annots, res)
-  result <- rbind(c('-','-',colData$data$Group),result)
-  return(result)
+  res <- convertDfRownamesEns2Symb(res, orgdb)
+  return(res)
 
 }
 
@@ -229,4 +248,186 @@ calculate_txi_deseq_deseq <- function(txi_deseq, colData){
   matr <- matr[keep,]
   toRet <- DESeq2::DESeq(matr)
   return(toRet)
+}
+
+
+color_numeric_column <- function(dt, data, column,
+                                 palette=c("#4169E1","white","red")){
+
+  rng <- range(data[[column]], na.rm=TRUE)
+
+  dt |>
+    DT::formatStyle(
+      column,
+
+      backgroundColor = DT::styleInterval(
+        seq(rng[1], rng[2], length.out = 999),
+
+        colorRampPalette(palette)(1000)
+      )
+    )
+}
+
+color_tpm_table <- function(
+    dt,
+    data,
+    global_scale = TRUE,
+    log_scale = TRUE,
+    palette = c("white","#fff7bc","#fec44f","#d95f0e","#993404"),
+    bins = 20
+){
+
+  numeric_cols <- names(data)[sapply(data, is.numeric)]
+
+  mat <- data[numeric_cols]
+
+  if(log_scale){
+    mat <- log10(mat + 1)
+  }
+
+  if(global_scale){
+
+    all_values <- unlist(mat)
+
+    rng <- range(all_values, na.rm = TRUE)
+
+    breaks <- seq(rng[1], rng[2], length.out = bins)
+
+    colors <- colorRampPalette(palette)(bins + 1)
+
+    for(col in numeric_cols){
+
+      dt <- dt |>
+        DT::formatStyle(
+          col,
+
+          backgroundColor = DT::styleInterval(
+            breaks,
+            colors
+          )
+        )
+    }
+
+  } else {
+
+    for(col in numeric_cols){
+
+      rng <- range(mat[[col]], na.rm = TRUE)
+
+      breaks <- seq(rng[1], rng[2], length.out = bins)
+
+      colors <- colorRampPalette(palette)(bins + 1)
+
+      dt <- dt |>
+        DT::formatStyle(
+          col,
+
+          backgroundColor = DT::styleInterval(
+            breaks,
+            colors
+          )
+        )
+    }
+
+  }
+
+  dt
+}
+
+make_TPM_container <- function(df, colData){
+
+  #saveRDS(df, '~/df.RDS')
+  sample_names <- colnames(df)[-1]
+  #saveRDS(sample_names, '~/sample_names.RDS')
+  #saveRDS(colData, '~/colData.RDS')
+
+  sample_groups <- as.character(colData$Group[
+    match(sample_names, colData$Sample)
+  ])
+  #saveRDS(sample_groups, '~/sample_groups.RDS')
+
+  group_lengths <- rle(sample_groups)
+
+  htmltools::withTags(
+
+    table(
+
+      thead(
+
+        tr(
+
+          th(colspan = 1,
+             ""), # name
+
+          lapply(
+
+            seq_along(group_lengths$values),
+
+            function(i){
+
+              th(
+                colspan = group_lengths$lengths[i],
+
+                style = paste0(
+                  "text-align:center;",
+                  if(i < length(group_lengths$values))
+                    "border-right:2px solid black;"
+                  else
+                    ""
+                ),
+
+                group_lengths$values[i]
+              )
+
+            }
+
+          )
+
+        ),
+
+        tr(
+          lapply(colnames(df), th)
+
+        )
+
+      )
+
+    )
+
+  )
+
+}
+
+
+add_group_separators <- function(dt, df, colData){
+
+  sample_names <- colnames(df)[2:ncol(df)]
+
+  sample_groups <- colData[
+    match(sample_names, colData$Sample),
+    "Group",
+    drop = TRUE
+  ]
+
+  sample_groups <- as.character(sample_groups)
+
+  r <- rle(sample_groups)
+
+  group_end_positions <- cumsum(r$lengths)
+
+  group_end_positions <- group_end_positions[-length(group_end_positions)]
+
+  for(pos in group_end_positions){
+
+    colname <- colnames(df)[-1][pos]
+
+    dt <- dt |>
+      DT::formatStyle(
+        columns = colname,
+        borderRight = "2px solid black"
+      )
+
+  }
+
+  dt
 }

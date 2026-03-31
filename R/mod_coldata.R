@@ -267,6 +267,13 @@ mod_coldata_server <- function(id, rv) {
           file = file.path(new_dir, "txi_deseq.RDS")
         )
 
+        saveRDS(
+          calculate_txi_tpm(txi = txi_subset,
+                            #colData = colData_subset,
+                            orgdb = rv$OrgDeeBee),
+          file = file.path(new_dir, "txi_tpms.RDS")
+        )
+
         incProgress(0.05, detail = 'calculating and saving the new txi_deseq_deseq object')
         txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
         saveRDS(txi_deseq_deseq,
@@ -350,6 +357,13 @@ mod_coldata_server <- function(id, rv) {
         txi_deseq,
         file = file.path(new_dir, "txi_deseq.RDS")
       )
+
+    saveRDS(
+      calculate_txi_tpm(txi = txi_subset,
+                        #colData = colData_subset,
+                        orgdb = rv$OrgDeeBee),
+      file = file.path(new_dir, "txi_tpms.RDS")
+    )
 
     incProgress(0.05, detail = 'calculating and saving the new txi_deseq_deseq object')
      txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)

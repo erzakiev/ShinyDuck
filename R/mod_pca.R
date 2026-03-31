@@ -65,11 +65,19 @@ mod_pca_server <- function(id, rv) {
     })
 
     output$pca_all <- renderPlot({
-      pca_all()
+      p <- pca_all()
+      png(file.path(rv$projFolderFull, 'pca_all.png'), width = 10, height = 10, units = 'in', res = 300)
+      print(p)
+      dev.off()
+      return(p)
     })
 
     output$pca_top500 <- renderPlot({
-      pca_top500()
+      p <- pca_top500()
+      png(file.path(rv$projFolderFull, 'pca_top500.png'), width = 10, height = 10, units = 'in', res = 300)
+      print(p)
+      dev.off()
+      return(p)
     })
 
 

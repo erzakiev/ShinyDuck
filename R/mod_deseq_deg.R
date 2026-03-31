@@ -20,9 +20,11 @@ mod_deseq_deg_server <- function(id, rv) {
       DT::datatable(format_df_numbers(as.data.frame(rstxdsq)), filter = 'top', extensions = 'Buttons',
                 options = list(
                   dom = "Bl<'search'>rtip",
-                  buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                  searchCols = list(NULL, NULL, NULL, NULL,
-                                    NULL, NULL, NULL, NULL, NULL, NULL, NULL, list(search = 'Significant (padj < 0.05)'))
+                  buttons = list(list(extend='copy'),
+                                 list(extend='csv', filename = "DEG_table"),
+                                 list(extend='excel', filename = "DEG_table"),
+                                 list(extend='pdf', filename = "DEG_table"),
+                                 list(extend='print'))
                 )#,
                 #callback = JS(callback)
                 )
@@ -52,23 +54,32 @@ mod_deseq_deg_server <- function(id, rv) {
                                                                           'padj',
                                                                           'log10padj',
                                                                           'Significance')) |>
-                                      dplyr::rename_with(~ paste0(names(rstxdsq)[counter], .x)))
+                                      dplyr::rename_with(~ paste0(names(rstxdsq)[counter],'_', .x)))
       }
 
 
-      rstxdsq <- c(rstxdsq, rstxdsq_altogether)
+      rstxdsq[[length(rstxdsq)+1]] <- rstxdsq_altogether
       names(rstxdsq)[length(rstxdsq)] <- 'Altogether'
 
-      myTabs = lapply(1: nTabs, function(x){
+      #saveRDS(format_df_numbers(rstxdsq[[1]]), file = file.path(rv$projFolderFull, 'format_df_numbers(rstxdsq[[1]]).RDS'))
+
+      myTabs = lapply(1: (nTabs+1), function(x){
         tabPanel(names(rstxdsq[x]),
-                 DT::renderDT({DT::datatable(format_df_numbers(rstxdsq[[x]]), filter = 'top', extensions = 'Buttons',
+                 DT::renderDT({DT::datatable(as.data.frame(format_df_numbers(rstxdsq[[x]])), filter = 'top', extensions = 'Buttons',
                                      options = list(dom = "Blrtip",
-                                                    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                                                    searchCols = list(NULL, NULL, NULL, NULL,
-                                                                      NULL, NULL, NULL, NULL, NULL, NULL, NULL, list(search = 'Significant (padj < 0.05)'))
-                                     ), #callback = JS(callback),
-                 )},
-                 server=FALSE, rownames = FALSE))});
+                                                    buttons = list(list(extend='copy'),
+                                                                list(extend='csv', filename = paste0("DEG_table_", names(rstxdsq[x]))),
+                                                                list(extend='excel', filename = paste0("DEG_table_", names(rstxdsq[x]))),
+                                                                list(extend='pdf', filename = paste0("DEG_table_", names(rstxdsq[x]))),
+                                                                list(extend='print')))
+                                      #callback = JS(callback),
+                 ) |>
+                     color_numeric_column(data=as.data.frame(format_df_numbers(rstxdsq[[x]])),
+                                        column="log2FoldChange")
+                   },
+                 server=FALSE, rownames = FALSE)
+
+                 )});
       return(do.call(tabsetPanel, myTabs))
     })
 

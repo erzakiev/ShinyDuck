@@ -28,7 +28,11 @@ mod_enrich_server <- function(id, rv) {
     extensions = 'Buttons',
     options = list(
       dom = 'Bfrtip',
-      buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+      buttons = list(list(extend='copy'),
+                     list(extend='csv', filename = paste0("GO_table")),
+                     list(extend='excel', filename = paste0("GO_table")),
+                     list(extend='pdf', filename = paste0("GO_table")),
+                     list(extend='print')),
       scrollY = TRUE,
       scrollX = TRUE,
       deferRender = TRUE,
@@ -53,7 +57,11 @@ mod_enrich_server <- function(id, rv) {
       myTabs = lapply(1: nTabs, function(x){tabPanel(names(rv$res_txi_deseq)[x] |> gsub(pattern = 'Group_', replacement = ''),
                                                     DT::renderDT(DT::datatable(toOutput[[x]], filter = 'top', rownames = FALSE,extensions = 'Buttons',
                                                                           options = list(dom = "Blrtip",
-                                                                                         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                                                                                         buttons = list(list(extend='copy'),
+                                                                                                        list(extend='csv', filename = paste0("GO_table_", names(rv$res_txi_deseq)[x] |> gsub(pattern = 'Group_', replacement = ''))),
+                                                                                                        list(extend='excel', filename = paste0("GO_table_", names(rv$res_txi_deseq)[x] |> gsub(pattern = 'Group_', replacement = ''))),
+                                                                                                        list(extend='pdf', filename = paste0("GO_table_", names(rv$res_txi_deseq)[x] |> gsub(pattern = 'Group_', replacement = ''))),
+                                                                                                        list(extend='print')),
                                                                                          scrollY = TRUE,
                                                                                          scrollX = TRUE,
                                                                                          deferRender = TRUE,
@@ -90,7 +98,6 @@ mod_enrich_server <- function(id, rv) {
             res = 300, units = 'in')
         print(p_custom)
         dev.off()
-        click("downloadDotPlot")
         return(p_custom)
       }
       return(p)
@@ -130,7 +137,6 @@ mod_enrich_server <- function(id, rv) {
             print(p[[i]])
             dev.off()
           }
-
         }
       }
       nTabs = length(rv$res_txi_deseq)

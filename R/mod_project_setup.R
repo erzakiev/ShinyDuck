@@ -83,7 +83,9 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             rv$txi_tpms <- readRDS(txi_tpm_file)
           } else {
             incProgress(0.2, detail = "TPM matrix not detected, calculating and saving")
-            rv$txi_tpms <- calculate_txi_tpm(rv$txi, rv$OrgDeeBee, rv$colData)
+            rv$txi_tpms <- calculate_txi_tpm(txi = rv$txi,
+                                             #colData = rv$colData,
+                                             orgdb = rv$OrgDeeBee)
             saveRDS(rv$txi_tpms, file = txi_tpm_file)
           }
 
