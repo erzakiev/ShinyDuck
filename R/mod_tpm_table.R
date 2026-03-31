@@ -2,31 +2,23 @@ mod_tpm_table_ui <- function(id) {
   ns <- NS(id)
 tagList(
   h3("Transcripts-per-million (TPM) values:"),
-  fluidRow(
-
-    column(
-      3,
-
-      shinyWidgets::prettySwitch(
-        inputId = ns("color_scale_mode"),
-        label = "Global color scaling",
-        value = TRUE
-      )
-
-    ),
-
-    column(
-      3,
-
-      shinyWidgets::prettySwitch(
-        inputId = ns("log_transform"),
-        label = "log10(TPM+1) (= like in real heatmaps)",
-        value = FALSE
-      )
-
-    )
-
-  ),
+  #fluidRow(
+  #  column(
+  #    3,
+  #
+  #    shinyWidgets::prettySwitch(
+  #      inputId = ns("color_scale_mode"),
+  #      label = "Global color scaling",
+  #      value = TRUE
+  #    )),
+  #  column(
+  #    3,
+  #
+  #    shinyWidgets::prettySwitch(
+  #      inputId = ns("log_transform"),
+  #      label = "log10(TPM+1) (= like in real heatmaps)",
+  #      value = FALSE
+  #    ))),
   DT::DTOutput(ns("TPM"))
 )
 }
@@ -80,8 +72,10 @@ mod_tpm_table_server <- function(id, rv) {
         rownames = F
       ) |> color_tpm_table(
         df,
-        global_scale = input$color_scale_mode,
-        log_scale = input$log_transform
+        #global_scale = input$color_scale_mode,
+        #log_scale = input$log_transform
+        global_scale = T,
+        log_scale = F
       ) |>
         add_group_separators(
           df,

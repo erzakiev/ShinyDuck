@@ -250,15 +250,24 @@ calculate_txi_deseq_deseq <- function(txi_deseq, colData){
   return(toRet)
 }
 
-
 color_numeric_column <- function(dt, data, column,
-                                 palette=c("#4169E1","white","red")){
+                                 palette=c("#4169E1","white","red"),
+                                 match_pat = T,
+                                 pat_to_exclude = "abs"){
 
-  rng <- range(data[[column]], na.rm=TRUE)
 
-  dt |>
+  if(match_pat){
+    columns <- grep(column, colnames(data), value = TRUE)
+    columns <- grep(pat_to_exclude, columns, value = TRUE, invert = TRUE)
+  } else {
+    columns <- column
+  }
+  for (col in columns){
+  rng <- range(data[[col]], na.rm=TRUE)
+
+  dt <- dt |>
     DT::formatStyle(
-      column,
+      col,
 
       backgroundColor = DT::styleInterval(
         seq(rng[1], rng[2], length.out = 999),
@@ -266,6 +275,9 @@ color_numeric_column <- function(dt, data, column,
         colorRampPalette(palette)(1000)
       )
     )
+  }
+  dt
+
 }
 
 color_tpm_table <- function(
@@ -274,7 +286,7 @@ color_tpm_table <- function(
     global_scale = TRUE,
     log_scale = TRUE,
     palette = c("white","#fff7bc","#fec44f","#d95f0e","#993404"),
-    bins = 20
+    bins = 100
 ){
 
   numeric_cols <- names(data)[sapply(data, is.numeric)]

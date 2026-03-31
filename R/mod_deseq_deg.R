@@ -54,8 +54,14 @@ mod_deseq_deg_server <- function(id, rv) {
                                                                           'padj',
                                                                           'log10padj',
                                                                           'Significance')) |>
-                                      dplyr::rename_with(~ paste0(names(rstxdsq)[counter],'_', .x)))
+                                      dplyr::rename_with(~ paste0(.x, '_', names(rstxdsq)[counter])))
       }
+      rstxdsq_altogether <- cbind(rstxdsq_altogether[,1:3],
+                                  rstxdsq_altogether[, grep("^log2FoldChange", colnames(rstxdsq_altogether))],
+                                  rstxdsq_altogether[, grep("^abs_log2FoldChange", colnames(rstxdsq_altogether))],
+                                  rstxdsq_altogether[, grep("^padj", colnames(rstxdsq_altogether))],
+                                  rstxdsq_altogether[, grep("^log10padj", colnames(rstxdsq_altogether))],
+                                  rstxdsq_altogether[, grep("^Significance", colnames(rstxdsq_altogether))])
 
 
       rstxdsq[[length(rstxdsq)+1]] <- rstxdsq_altogether
