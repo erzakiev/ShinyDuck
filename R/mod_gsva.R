@@ -105,13 +105,13 @@ mod_gsva_server <- function(id, rv) {
       if(is.null(gsva_result())) return({})
 
       fntsize=12
-      p1 <- ggplot2::ggplot(gsva_result(), aes(x=Group, y=Value, fill=Group)) +
+      p1 <- ggplot2::ggplot(gsva_result(), ggplot2::aes(x=Group, y=Value, fill=Group)) +
         ggplot2::geom_boxplot(width=0.4)+
         ggplot2::ggtitle(paste0("GSVA analysis"), subtitle = "on TPM counts") +
         ggplot2::xlab("") +
         ggplot2::ylab("GSVA value")+
         ggplot2::theme_classic() +
-        ggplot2::theme(legend.position = "none") + ggplot2::theme(axis.text = element_text(size = fntsize))+ggplot2::scale_x_discrete(guide = guide_axis(n.dodge = 2))
+        ggplot2::theme(legend.position = "none") + ggplot2::theme(axis.text = ggplot2::element_text(size = fntsize))+ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2))
 
       flnm <- paste0("GSVAsignature.png")
       png(filename = file.path(rv$projFolderFull, 'GSVAsignature.png'), width = 8, height = 6, units = "in", res =300)
