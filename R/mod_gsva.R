@@ -62,8 +62,8 @@ mod_gsva_server <- function(id, rv) {
       if(is.null(gsva_string())) return({})
 
       abund <- rv$txi_tpms
-      groups <- abund[1,3:ncol(abund)]
-      abund <- abund[-1,]
+      groups <- as.character(rv$colData$Group)
+      #abund <- abund[-1,]
 
       abund <- abund[which(!duplicated(rownames(abund))),]
       #rownames(abund) <- abund$ENSEMBL
@@ -81,10 +81,13 @@ mod_gsva_server <- function(id, rv) {
         ifelse(test=v1>nrow(abund), yes=v1-nrow(abund), no=v1) -> v2
 
         signature <- rownames(abund)[unique(v2)]
-        abund <- abund[,-2]
-        abund <- abund[,-1]
 
-        gsva <- GSVA::gsva(GSVA::gsvaParam(as.matrix(dplyr::mutate_all(abund, function(x) as.numeric(as.character(x)))),
+        colnames(abund) <- groups
+        #abund <- abund[,-2]
+        #abund <- abund[,-1]
+        saveRDS(abund, 'kek.RDS')
+
+        gsva <- GSVA::gsva(GSVA::gsvaParam(as.matrix(abund),
                            list(userSignature=signature)))
         gsva <- rbind(groups, gsva)
         gsva <- t(gsva)
