@@ -65,10 +65,10 @@ mod_gsva_server <- function(id, rv) {
       groups <- abund[1,3:ncol(abund)]
       abund <- abund[-1,]
 
-      abund <- abund[which(!duplicated(abund$ENSEMBL)),]
-      rownames(abund) <- abund$ENSEMBL
-      matching_genes <- unique(gsva_string()[which(toupper(gsva_string()) %in% toupper(c(abund$SYMBOL, abund$ENSEMBL)))])
-      non_matching_genes <- unique(gsva_string()[which(!toupper(gsva_string()) %in% toupper(c(abund$SYMBOL, abund$ENSEMBL)))])
+      abund <- abund[which(!duplicated(rownames(abund))),]
+      #rownames(abund) <- abund$ENSEMBL
+      matching_genes <- unique(gsva_string()[which(toupper(gsva_string()) %in% toupper(rownames(abund)))])
+      non_matching_genes <- unique(gsva_string()[which(!toupper(gsva_string()) %in% toupper(rownames(abund)))])
 
       if(length(matching_genes) < 2){
         return(NULL)
@@ -76,7 +76,7 @@ mod_gsva_server <- function(id, rv) {
 
         gsva_string_matched(matching_genes)
 
-        which(toupper(c(abund$SYMBOL, abund$ENSEMBL)) %in% toupper(gsva_string())) -> v1
+        which(toupper(rownames(abund)) %in% toupper(gsva_string())) -> v1
 
         ifelse(test=v1>nrow(abund), yes=v1-nrow(abund), no=v1) -> v2
 
