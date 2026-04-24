@@ -61,14 +61,25 @@ mod_gsva_server <- function(id, rv) {
       req(input$runGSVA)
       if(is.null(gsva_string())) return({})
 
-      abund <- rv$txi_tpms
+      abund <- as.data.frame(rv$txi$abundance)
+      abund <- convertDfRownamesEns2Symb(abund, rv$OrgDeeBee)
+
       groups <- as.character(rv$colData$Group)
+      print('groups:')
+      print(groups)
       #abund <- abund[-1,]
+      print('rownames(abund):')
+      print(rownames(abund))
 
       abund <- abund[which(!duplicated(rownames(abund))),]
       #rownames(abund) <- abund$ENSEMBL
       matching_genes <- unique(gsva_string()[which(toupper(gsva_string()) %in% toupper(rownames(abund)))])
       non_matching_genes <- unique(gsva_string()[which(!toupper(gsva_string()) %in% toupper(rownames(abund)))])
+      print('matching_genes:')
+      print(matching_genes)
+
+      print('non_matching_genes:')
+      print(non_matching_genes)
 
       if(length(matching_genes) < 2){
         return(NULL)
