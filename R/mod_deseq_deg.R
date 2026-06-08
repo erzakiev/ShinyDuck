@@ -1,7 +1,23 @@
 mod_deseq_deg_ui <- function(id) {
   ns <- NS(id)
+
   tagList(
-    h3(textOutput(ns("text_DEGs"))),
+    fluidRow(
+      column(
+        width = 6,
+        h3(textOutput(ns("text_DEGs"), inline = TRUE))
+      ),
+      column(
+        width = 5,
+        numericInput(
+          ns("logFC_cutoff"),
+          label = "Filter logFC? (will also affect the results in the GO enrichments tab!)",
+          value = 0,
+          min = 0,
+          width = "100%"
+        )
+      )
+    ),
     h4(textOutput(ns("text_which_is_Control_in_DEG"))),
     DT::DTOutput(ns("DESeq_DEGs")),
     uiOutput(ns("DESeq_DEGsMultitab"))
@@ -12,11 +28,25 @@ mod_deseq_deg_server <- function(id, rv) {
 
   moduleServer(id, function(input, output, session) {
 
+    observeEvent(input$logFC_cutoff, {
+      rv$logFC_threshold <- input$logFC_cutoff
+    })
+
     output$DESeq_DEGs <- DT::renderDT({
       req(rv$app_state == 'ready')
       req(rv$multiple_groups == 0)
       message("Preparing DEG table for mono-group")
       rstxdsq <- rv$res_txi_deseq |> dplyr::select(-c('lfcSE', 'stat', 'pvalue'))
+      rstxdsq <- rstxdsq |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+
+      withProgress(message = "Recalculating GO", value = 0,{
+        incProgress(0.5, detail = "filtered GO enrichment...")
+        rv$res_DEGs_txi_deseq <- rv$res_DEGs_txi_deseq |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+        rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
+        incProgress(0.5, detail = "filtered GO enrichment... Finished")
+      })
+
+
       DT::datatable(format_df_numbers(as.data.frame(rstxdsq)), filter = 'top', extensions = 'Buttons',
                 options = list(
                   dom = "Bl<'search'>rtip",
@@ -44,6 +74,7 @@ mod_deseq_deg_server <- function(id, rv) {
         dplyr::select(x, -c(lfcSE, stat, pvalue))
       })
 
+
       names(rstxdsq) <- names(rstxdsq) |> gsub(pattern = 'Group_', replacement = '')
 
       rstxdsq_altogether <- rstxdsq[[1]] |> dplyr::select(c("ENSEMBL", 'SYMBOL', 'baseMean'))
@@ -67,7 +98,25 @@ mod_deseq_deg_server <- function(id, rv) {
       rstxdsq[[length(rstxdsq)+1]] <- rstxdsq_altogether
       names(rstxdsq)[length(rstxdsq)] <- 'Altogether'
 
+      message("Finished creating an altogether thingy for  multi-groups")
+
       #saveRDS(format_df_numbers(rstxdsq[[1]]), file = file.path(rv$projFolderFull, 'format_df_numbers(rstxdsq[[1]]).RDS'))
+
+      if(rv$logFC_threshold != 0){
+        for (i in 1:(length(rstxdsq)-1)){
+          rstxdsq[[i]] <- rstxdsq[[i]] |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+          }
+        message("Finished DEG filtering for multi-groups")
+        withProgress(message = "Recalculating GO", value = 0,{
+          incProgress(0.5, detail = "filtered GO enrichment...")
+          for (i in 1:(length(rv$res_DEGs_txi_deseq))){
+            rv$res_DEGs_txi_deseq[[i]] <- rv$res_DEGs_txi_deseq[[i]] |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+          }
+          rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
+          incProgress(0.5, detail = "filtered GO enrichment... Finished")
+        })
+
+      }
 
       myTabs = lapply(1: (nTabs+1), function(x){
         tabPanel(names(rstxdsq[x]),

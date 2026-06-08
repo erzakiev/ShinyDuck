@@ -24,6 +24,7 @@ app_server <- function(input, output, session, data_root) {
   mod_enrich_server("enrich", rv)
   mod_gsva_server("gsva", rv)
   mod_download_server("download", rv)
+  mod_dorothea_server('dorothea', rv)
 
   observeEvent(input$sidebar, {
     message("Active tab changed to: ", input$sidebar)

@@ -1,6 +1,7 @@
 mod_enrich_ui <- function(id) {
   ns <- NS(id)
   textOutput(ns("Enrichments_title"))
+  textOutput(ns("logFC_warning"))
   tabsetPanel(id=ns('Enrichments_panel'), type = "tabs",
               tabPanel(ns("Dotplots"),
                        textInput(ns('showCategory'), label = 'Show how many top enriched terms?', value = "50", width='15%'),
@@ -16,6 +17,13 @@ mod_enrich_server <- function(id, rv) {
     output$Enrichments_title<- renderText({
       req(rv$app_state == 'ready')
       return("Enriched terms:")
+    })
+
+    output$logFC_warning <- renderText({
+      req(rv$app_state == 'ready')
+      if(rv$logFC_threshold!=0){
+        paste0('Note that the enriched terms below were calculated with the logFC threshold set at ', rv$logFC_threshold,' in the pane "DEGs"')
+      }
     })
 
     output$GO<- DT::renderDT({

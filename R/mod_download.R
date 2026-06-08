@@ -74,7 +74,7 @@ mod_download_server <- function(id, rv) {
         rownames = FALSE,
         options = list(
           dom = 't',
-          pageLength = 50
+          pageLength = 1000
         ),
         callback = htmlwidgets::JS(
           paste0(

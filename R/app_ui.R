@@ -40,6 +40,9 @@ app_ui <- function() {
                                   shinydashboard::menuItem("GSVA",
                                                            tabName = "GSVA",
                                                            icon = icon("chart-column")),
+                                  shinydashboard::menuItem("DoRoTheA TF enrichment",
+                                                           tabName = "dorothea",
+                                                           icon = icon("chart-column")),
                                   shinydashboard::menuItem("Downloads",
                                                            tabName = "download",
                                                            icon = icon("download"))
@@ -123,6 +126,9 @@ app_ui <- function() {
         ),
         shinydashboard::tabItem(tabName = "GSVA",
                 mod_gsva_ui("gsva")
+        ),
+        shinydashboard::tabItem(tabName = "DoRoThEa TF enrichment",
+                                mod_dorothea_ui("dorothea")
         ),
         shinydashboard::tabItem(tabName = "download",
                                         mod_download_ui("download")
