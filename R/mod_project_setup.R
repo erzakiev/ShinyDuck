@@ -63,6 +63,10 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
         rv$app_state <- "ready"
         rv$projFolderFull <- inFolder
         rv$colData <- readRDS(file.path(rv$projFolderFull, "colData.RDS"))
+        if(ncol(rv$colData)<3){
+          rv$colData$Batch <- 1
+          saveRDS(rv$colData, file.path(rv$projFolderFull, "colData.RDS"))
+        }
         rv$referenceGenomeChoice <- readRDS(file.path(rv$projFolderFull, "referenceGenomeChoice.RDS"))
 
         if(rv$referenceGenomeChoice!=1){
@@ -86,7 +90,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             rv$txi_tpms <- calculate_txi_tpm(txi = rv$txi,
                                              #colData = rv$colData,
                                              orgdb = rv$OrgDeeBee)
-            saveRDS(rv$txi_tpms, file = txi_tpm_file)
+            saveRDS(rv$txi_tpms, file = txi_tpm_file, compress=T)
           }
 
           txi_deseq_file <- file.path(rv$projFolderFull, "txi_deseq.RDS")
@@ -95,13 +99,17 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             rv$txi_deseq <- readRDS(txi_deseq_file)
           } else {
             incProgress(0.2, detail = "txi_deseq not detected, calculating and saving")
-            rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi,
-                                                             colData = rv$colData,
-                                                             design = ~Group)
-            saveRDS(rv$txi_deseq, file = txi_deseq_file)
+            if(length(unique(rv$colData$Batch)) > 1){
+              rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi,
+                                                               colData = rv$colData,
+                                                               design = ~Batch+Group)
+            } else {
+              rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi,
+                                                               colData = rv$colData,
+                                                               design = ~Group)
+            }
+            saveRDS(rv$txi_deseq, file = txi_deseq_file, compress=T)
           }
-
-
 
           txi_deseq_deseq_file <- file.path(rv$projFolderFull, "txi_deseq_deseq.RDS")
           if(file.exists(txi_deseq_deseq_file)){
@@ -110,7 +118,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "txi_deseq_deseq not detected, calculating and saving")
             rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData)
-            saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file)
+            saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file, compress=T)
           }
 
           res_txi_deseq_file <- file.path(rv$projFolderFull, "res_txi_deseq.RDS")
@@ -120,10 +128,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.35, detail = "DESeq2 not detected, calculating and saving")
             rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
-              DESeq2::DESeqDataSetFromTximport(rv$txi,
-                                                             colData = rv$colData,
-                                                             design = ~Group)
-            saveRDS(rv$res_txi_deseq, file = res_txi_deseq_file)
+            saveRDS(rv$res_txi_deseq, file = res_txi_deseq_file, compress=T)
           }
 
           res_DEGs_txi_deseq_file <- file.path(rv$projFolderFull, "res_DEGs_txi_deseq.RDS")
@@ -133,7 +138,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "Calculating res_DEGs_txi_deseq and saving")
             rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
-            saveRDS(rv$res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file)
+            saveRDS(rv$res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file, compress=T)
           }
 
           txi_deseq_deseq_file <- file.path(rv$projFolderFull, "txi_deseq_deseq.RDS")
@@ -143,7 +148,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "txi_deseq_deseq not detected, calculating and saving")
             rv$txi_deseq_deseq <- calculate_txi_deseq_deseq_file(rv$txi_deseq, rv$colData)
-            saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file)
+            saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file, compress=T)
           }
 
           incProgress(0.15, detail = "Reading GO enrichments...")
@@ -155,7 +160,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "GO not detected; Calculating GO enrichment results and saving")
             rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
-            saveRDS(rv$GO_result, file = GO_result_file)
+            saveRDS(rv$GO_result, file = GO_result_file, compress=T)
           }
 
           vst_file <- file.path(rv$projFolderFull, "vst_data.RDS")
@@ -165,7 +170,14 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "VST transforming txi data and saving")
             rv$vst_data <- DESeq2::vst(rv$txi_deseq)
-            saveRDS(rv$vst_data, file = vst_file)
+            if(length(unique(rv$colData$Batch))>1){
+              SummarizedExperiment::assay(rv$vst_data) <- limma::removeBatchEffect(
+                rv$txi$counts,
+                batch = rv$colData$Batch,
+                design = stats::model.matrix(~ Group, data = rv$colData)
+              )
+            }
+            saveRDS(rv$vst_data, file = vst_file, compress=T)
           }
           incProgress(0.1, detail = "Finished loading")
 
