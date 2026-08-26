@@ -63,7 +63,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
         rv$app_state <- "ready"
         rv$projFolderFull <- inFolder
         rv$colData <- readRDS(file.path(rv$projFolderFull, "colData.RDS"))
-        if(ncol(rv$colData)<3){
+        if(ncol(rv$colData)<4){
           rv$colData$Batch <- 1
           saveRDS(rv$colData, file.path(rv$projFolderFull, "colData.RDS"))
         }
@@ -117,7 +117,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             rv$txi_deseq_deseq <- readRDS(txi_deseq_deseq_file)
           } else {
             incProgress(0.2, detail = "txi_deseq_deseq not detected, calculating and saving")
-            rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData)
+            rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData, rv$filterLowlyExpressedGenes)
             saveRDS(rv$txi_deseq_deseq, file = txi_deseq_deseq_file, compress=T)
           }
 
@@ -138,7 +138,9 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "Calculating res_DEGs_txi_deseq and saving")
             rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
-            saveRDS(rv$res_DEGs_txi_deseq, file = res_DEGs_txi_deseq_file, compress=T)
+            saveRDS(rv$res_DEGs_txi_deseq, 
+                    file = res_DEGs_txi_deseq_file, 
+                    compress=T)
           }
 
           txi_deseq_deseq_file <- file.path(rv$projFolderFull, "txi_deseq_deseq.RDS")

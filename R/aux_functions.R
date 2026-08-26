@@ -91,8 +91,11 @@ calculate_txi_tpm <- function(txi, orgdb){
 calculate_res_txi_deseq <- function(txi_deseq_deseq, orgdb){
 
   toRet <- toRet2 <- toRet3 <- toWrite <- tytl <- list()
-  if(length(DESeq2::resultsNames(txi_deseq_deseq))<=2){
-    toRet <- DESeq2::results(txi_deseq_deseq)
+  
+  resNames <- grep('Group_', DESeq2::resultsNames(txi_deseq_deseq), value = T)
+  saveRDS(resNames, file = 'resNames.RDS')
+  if(length(resNames)<2){
+    toRet <- DESeq2::results(txi_deseq_deseq, name=resNames)
     toRet$log10padj <- log10(toRet$padj)
     toRet$Significance <- 'Non-significant'
     toRet$Significance[toRet$padj<0.05] <- 'Significant (padj < 0.05)'
@@ -108,28 +111,29 @@ calculate_res_txi_deseq <- function(txi_deseq_deseq, orgdb){
 
   }  else {
     toRet3 <- toRet <- list()
-    for (i in 2:length(DESeq2::resultsNames(txi_deseq_deseq))){
-      toRet[[(i-1)]] <- DESeq2::results(txi_deseq_deseq, name = DESeq2::resultsNames(txi_deseq_deseq)[i] )
-      toRet[[(i-1)]]$log10padj <- log10( toRet[[(i-1)]]$padj)
-      toRet[[(i-1)]]$Significance <- 'Non-significant'
-      toRet[[(i-1)]]$Significance[ toRet[[(i-1)]]$padj<0.05] <- 'Significant (padj < 0.05)'
+    for (i in 1:length(resNames)){
+      toRet[[(i)]] <- DESeq2::results(txi_deseq_deseq, name = resNames[i] )
+      toRet[[(i)]]$log10padj <- log10( toRet[[(i)]]$padj)
+      toRet[[(i)]]$Significance <- 'Non-significant'
+      toRet[[(i)]]$Significance[ toRet[[(i)]]$padj<0.05] <- 'Significant (padj < 0.05)'
 
-      toRet2 <- data.frame(ENSEMBL=rownames(toRet[[(i-1)]]),
-                           toRet[[(i-1)]][,1:2],
-                           abs_log2FoldChange=abs(toRet[[(i-1)]][,2]),toRet[[(i-1)]][,3:ncol(toRet[[(i-1)]])])
+      toRet2 <- data.frame(ENSEMBL=rownames(toRet[[(i)]]),
+                           toRet[[(i)]][,1:2],
+                           abs_log2FoldChange=abs(toRet[[(i)]][,2]),toRet[[(i)]][,3:ncol(toRet[[(i)]])])
 
       annots <- AnnotationDbi::select(orgdb, keys=rownames(toRet2),
                                       columns="SYMBOL", keytype="ENSEMBL")
 
-      toRet3[[(i-1)]] <- merge(annots,
+      toRet3[[(i)]] <- merge(annots,
                                toRet2,
                                by.x="ENSEMBL",
                                by.y="ENSEMBL")
-      toRet3[[(i-1)]] <- toRet3[[(i-1)]][order(toRet3[[(i-1)]]$padj),]
+      toRet3[[(i)]] <- toRet3[[(i)]][order(toRet3[[(i)]]$padj),]
 
     }
-    names(toRet3) <- DESeq2::resultsNames(txi_deseq_deseq)[2:length(DESeq2::resultsNames(txi_deseq_deseq))]
+    names(toRet3) <- resNames
   }
+  saveRDS(toRet3, file = 'toRet3.RDS', compress=T)
   return(toRet3)
 }
 
@@ -241,11 +245,11 @@ reshape_GO_result_for_xlsx <- function(res_DEGs_txi_deseq, orgdb){
   return(toWrite)
 }
 
-calculate_txi_deseq_deseq <- function(txi_deseq, colData){
+calculate_txi_deseq_deseq <- function(txi_deseq, colData, filter){
   matr <- txi_deseq
   smallestGroupSize <- floor(min(table(colData$Group)))
   keep <- rowSums(DESeq2::counts(matr) >= 10) >= smallestGroupSize
-  matr <- matr[keep,]
+  if(filter) matr <- matr[keep,]
   toRet <- DESeq2::DESeq(matr)
   return(toRet)
 }

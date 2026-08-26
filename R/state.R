@@ -11,6 +11,7 @@ make_state <- function() {
     colData = NULL,
     multiple_groups = 0, # 0 or 1, set to 1 if more than 2 groups in design
     logFC_threshold = 0,
+    filterLowlyExpressedGenes = TRUE,
 
     # stage flags
     fastqc_finished = 0,

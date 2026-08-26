@@ -8,7 +8,16 @@ mod_deseq_deg_ui <- function(id) {
         h3(textOutput(ns("text_DEGs"), inline = TRUE))
       ),
       column(
-        width = 5,
+        width = 2,
+        checkboxInput(
+          ns("filter_lowexpressors"),
+          label = "Filter lowly expressed genes? (will also affect the results in the GO enrichments tab!)",
+          value = TRUE,
+          width = "100%"
+        )
+      ),
+      column(
+        width = 2,
         numericInput(
           ns("logFC_cutoff"),
           label = "Filter logFC? (will also affect the results in the GO enrichments tab!)",
@@ -30,6 +39,14 @@ mod_deseq_deg_server <- function(id, rv) {
 
     observeEvent(input$logFC_cutoff, {
       rv$logFC_threshold <- input$logFC_cutoff
+    })
+    
+    observeEvent(input$filter_lowexpressors, {
+      rv$filterLowlyExpressedGenes <- input$filter_lowexpressors
+      req(rv$txi_deseq_deseq)
+      req(rv$res_txi_deseq)
+      rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData, rv$filterLowlyExpressedGenes)
+      rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
     })
 
     output$DESeq_DEGs <- DT::renderDT({
@@ -149,7 +166,7 @@ mod_deseq_deg_server <- function(id, rv) {
 
     n_contrasts <- reactive({
       req(rv$app_state == 'ready')
-      return(length(resultsNames(rv$res_DEGs_txi_deseq)))
+      return(length(DESeq2::resultsNames(rv$res_DEGs_txi_deseq)))
     })
 
   })

@@ -166,7 +166,7 @@ mod_coldata_server <- function(id, rv) {
 
 
         incProgress(0.05, detail = 'Recalculating txi_deseq_deseq')
-        rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData)
+        rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData, rv$filterLowlyExpressedGenes)
 
         incProgress(0.05, detail = 'Saving txi_deseq_deseq')
         saveRDS(rv$txi_deseq_deseq,
@@ -175,12 +175,14 @@ mod_coldata_server <- function(id, rv) {
 
         rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
         saveRDS(rv$res_txi_deseq,
-                file = file.path(rv$projFolderFull, 'res_txi_deseq.RDS'), compress=T)
+                file = file.path(rv$projFolderFull, 
+                                 'res_txi_deseq.RDS'), compress=T)
         #openxlsx::write.xlsx(rv$res_txi_deseq, file = file.path(rv$projFolderFull,'DEGs_full.xlsx'))
 
         rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
         saveRDS(rv$res_DEGs_txi_deseq,
-                file = file.path(rv$projFolderFull, 'res_DEGs_txi_deseq.RDS'), compress=T)
+                file = file.path(rv$projFolderFull, 
+                                 'res_DEGs_txi_deseq.RDS'), compress=T)
 
         #if(class(rv$res_DEGs_txi_deseq)=="data.frame"){
         #  openxlsx::write.xlsx(as.data.frame(rv$res_DEGs_txi_deseq), file = file.path(rv$projFolderFull,'DEGs.xlsx'))
@@ -308,7 +310,7 @@ mod_coldata_server <- function(id, rv) {
         )
 
         incProgress(0.05, detail = 'calculating and saving the new txi_deseq_deseq object')
-        txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
+        txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset, rv$filterLowlyExpressedGenes)
         saveRDS(txi_deseq_deseq,
                 file = file.path(new_dir, 'txi_deseq_deseq.RDS'),
                 compress=T)
@@ -429,7 +431,7 @@ mod_coldata_server <- function(id, rv) {
     )
 
     incProgress(0.05, detail = 'calculating and saving the new txi_deseq_deseq object')
-     txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset)
+     txi_deseq_deseq <- calculate_txi_deseq_deseq(txi_deseq, colData_subset, rv$filterLowlyExpressedGenes)
      saveRDS(txi_deseq_deseq,
               file = file.path(new_dir, 'txi_deseq_deseq.RDS'),
              compress=T)
