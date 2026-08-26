@@ -143,7 +143,13 @@ mod_coldata_server <- function(id, rv) {
         if(length(which(rv$colData[,3]))>0) rv$colData$Group <- relevel(x = rv$colData$Group, ref = reff)
 
         incProgress(0.05, detail = 'Remaking the DESeq2::DESeqDataSet')
-        rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi, colData = rv$colData, design = ~Group)
+
+        # option A: re-creating a new DESeqDataSet
+        #rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi, colData = rv$colData, design = ~Group)
+        
+        # option B: trying to avoid re-creating a new DESeqDataSet
+        rv$txi_deseq$Group <- relevel(factor(rv$txi_deseq$Group), ref = reff)
+        rv$txi_deseq <- DESeq2::DESeq(rv$txi_deseq)
 
         incProgress(0.05, detail = 'Saving the DESeq2::DESeqDataSet')
         saveRDS(
