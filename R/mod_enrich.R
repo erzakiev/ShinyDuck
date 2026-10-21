@@ -29,6 +29,7 @@ mod_enrich_server <- function(id, rv) {
     output$GO<- DT::renderDT({
       req(rv$app_state == 'ready')
       req(rv$multiple_groups == 0)
+      
       varbl <- format_df_numbers(as.data.frame(rv$GO_result))
       varbl$geneID <- gsub(pattern='/', replacement=' ', varbl$geneID)
       varbl
@@ -83,32 +84,41 @@ mod_enrich_server <- function(id, rv) {
       req(rv$app_state == 'ready')
       req(rv$multiple_groups == 0)
       ncat <- as.numeric(input$showCategory)
-
-      p <- enrichplot::dotplot(rv$GO_result,
-                               showCategory=50,
-                               x='p.adjust',
-                               decreasing=F)
-      png(file.path(rv$projFolderFull,'GO_dotplot_300dpi.png'),
-          width = 10,
-          height = 20,
-          res = 300, units = 'in')
-      print(p)
-      dev.off()
-
-      if(ncat!=50){
-        p_custom <- enrichplot::dotplot(rv$GO_result,
-                                        showCategory=ncat,
-                                        x='p.adjust',
-                                        decreasing=F)
-        png(file.path(rv$projFolderFull,'GO_dotplot_custom_number_of_Terms_300dpi.png'),
+      
+      if(rv$GO_result=='oops no significant genes to begin with...'){
+        plot.new()
+        text(
+          0.2, 0.9,
+          "no significant genes :(",
+          cex = 4
+        )
+      } else {
+        p <- enrichplot::dotplot(rv$GO_result,
+                                 showCategory=50,
+                                 x='p.adjust',
+                                 decreasing=F)
+        png(file.path(rv$projFolderFull,'GO_dotplot_300dpi.png'),
             width = 10,
-            height = round(20*ncat/50, 1),
+            height = 20,
             res = 300, units = 'in')
-        print(p_custom)
+        print(p)
         dev.off()
-        return(p_custom)
+        
+        if(ncat!=50){
+          p_custom <- enrichplot::dotplot(rv$GO_result,
+                                          showCategory=ncat,
+                                          x='p.adjust',
+                                          decreasing=F)
+          png(file.path(rv$projFolderFull,'GO_dotplot_custom_number_of_Terms_300dpi.png'),
+              width = 10,
+              height = round(20*ncat/50, 1),
+              res = 300, units = 'in')
+          print(p_custom)
+          dev.off()
+          return(p_custom)
+        }
+        return(p)
       }
-      return(p)
     })
 
     output$GO_dotplot_multitab <- renderUI({

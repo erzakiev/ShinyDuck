@@ -180,14 +180,19 @@ calculate_GO_result <- function(res_DEGs_txi_deseq, orgdb){
     }
     names(toRet) <- unlist(tytl)
   } else {
-    # 1 vs 1
-    toRet <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[,2],
-                                       keyType = "SYMBOL",
-                                       OrgDb = orgdb,
-                                       ont = "BP",
-                                       pAdjustMethod = "BH",
-                                       qvalueCutoff = 0.05,
-                                       readable = TRUE)
+    if(all(rv$res_DEGs_txi_deseq=='oops, none significant')){
+      toRet <- 'oops no significant genes to begin with...'
+    } else {
+      # 1 vs 1
+      toRet <- clusterProfiler::enrichGO(gene = res_DEGs_txi_deseq[,2],
+                                         keyType = "SYMBOL",
+                                         OrgDb = orgdb,
+                                         ont = "BP",
+                                         pAdjustMethod = "BH",
+                                         qvalueCutoff = 0.05,
+                                         readable = TRUE)
+    }
+    
   }
   return(toRet)
 }

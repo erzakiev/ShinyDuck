@@ -55,11 +55,18 @@ mod_deseq_deg_server <- function(id, rv) {
       req(rv$multiple_groups == 0)
       message("Preparing DEG table for mono-group")
       rstxdsq <- rv$res_txi_deseq |> dplyr::select(-c('lfcSE', 'stat', 'pvalue'))
-      rstxdsq <- rstxdsq |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+      message("here is the rstxdsq:")
+      print(rstxdsq)
+      saveRDS(rstxdsq, 'rstxdsq.RDS')
+        rstxdsq <- rstxdsq |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
 
       withProgress(message = "Recalculating GO", value = 0,{
         incProgress(0.5, detail = "filtered GO enrichment...")
-        rv$res_DEGs_txi_deseq <- rv$res_DEGs_txi_deseq |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+        if(all(rv$res_DEGs_txi_deseq=='oops, none significant')){
+          rv$res_DEGs_txi_deseq <- 'oops, none significant'
+        } else {
+          rv$res_DEGs_txi_deseq <- rv$res_DEGs_txi_deseq |> dplyr::filter(abs(log2FoldChange) > rv$logFC_threshold)
+        }
         rv$GO_result <- calculate_GO_result(rv$res_DEGs_txi_deseq, rv$OrgDeeBee)
         incProgress(0.5, detail = "filtered GO enrichment... Finished")
       })
