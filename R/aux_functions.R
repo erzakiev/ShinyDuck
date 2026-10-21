@@ -180,7 +180,7 @@ calculate_GO_result <- function(res_DEGs_txi_deseq, orgdb){
     }
     names(toRet) <- unlist(tytl)
   } else {
-    if(all(rv$res_DEGs_txi_deseq=='oops, none significant')){
+    if(all(res_DEGs_txi_deseq=='oops, none significant')){
       toRet <- 'oops no significant genes to begin with...'
     } else {
       # 1 vs 1
