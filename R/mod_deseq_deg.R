@@ -47,6 +47,7 @@ mod_deseq_deg_server <- function(id, rv) {
       req(rv$res_txi_deseq)
       rv$txi_deseq_deseq <- calculate_txi_deseq_deseq(rv$txi_deseq, rv$colData, rv$filterLowlyExpressedGenes)
       rv$res_txi_deseq <- calculate_res_txi_deseq(rv$txi_deseq_deseq, rv$OrgDeeBee)
+      rv$res_DEGs_txi_deseq <- calculate_res_DEGs_txi_deseq(rv$res_txi_deseq)
     })
 
     output$DESeq_DEGs <- DT::renderDT({

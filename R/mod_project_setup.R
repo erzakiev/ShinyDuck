@@ -100,10 +100,13 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
           } else {
             incProgress(0.2, detail = "txi_deseq not detected, calculating and saving")
             if(length(unique(rv$colData$Batch)) > 1){
+              rownames(rv$colData) <- NULL
+              rv$colData$Batch <- as.factor(rv$colData$Batch)
               rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi,
                                                                colData = rv$colData,
                                                                design = ~Batch+Group)
             } else {
+              rownames(rv$colData) <- NULL
               rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi,
                                                                colData = rv$colData,
                                                                design = ~Group)
@@ -173,6 +176,7 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
             incProgress(0.2, detail = "VST transforming txi data and saving")
             rv$vst_data <- DESeq2::vst(rv$txi_deseq)
             if(length(unique(rv$colData$Batch))>1){
+              rv$colData$Batch <- as.factor(rv$colData$Batch)
               SummarizedExperiment::assay(rv$vst_data) <- limma::removeBatchEffect(
                 rv$txi$counts,
                 batch = rv$colData$Batch,

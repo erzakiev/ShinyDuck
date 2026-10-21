@@ -147,6 +147,7 @@ mod_coldata_server <- function(id, rv) {
         # option A: re-creating a new DESeqDataSet
 
         if(length(unique(rv$colData$Batch))>1){
+          rv$colData$Batch <- as.factor(rv$colData$Batch)
           rv$txi_deseq <- DESeq2::DESeqDataSetFromTximport(rv$txi, 
                                                            colData = rv$colData, 
                                                            design = ~ Batch + Group)
@@ -203,6 +204,7 @@ mod_coldata_server <- function(id, rv) {
         rv$vst_data <- DESeq2::vst(rv$txi_deseq)
         
         if(length(unique(rv$colData$Batch))>1){
+          rv$colData$Batch <- as.factor(rv$colData$Batch)
           SummarizedExperiment::assay(rv$vst_data) <- limma::removeBatchEffect(
             rv$txi$counts,
             batch = rv$colData$Batch,
@@ -286,6 +288,7 @@ mod_coldata_server <- function(id, rv) {
         incProgress(0.05, detail = 'recreating and saving the new txi_deseq object')
 
         if(length(unique(colData_subset$Batch))>1){
+          colData_subset$Batch <- as.factor(colData_subset$Batch)
           txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, 
                                                            colData = colData_subset, 
                                                            design = ~ Batch + Group)
@@ -349,6 +352,7 @@ mod_coldata_server <- function(id, rv) {
         vsd <- DESeq2::vst(txi_deseq)
         
         if(length(unique(colData_subset$Batch))>1){
+          colData_subset$Batch <- as.factor(colData_subset$Batch)
           SummarizedExperiment::assay(vsd) <- limma::removeBatchEffect(
             txi_subset$counts,
             batch = colData_subset$Batch,
@@ -407,6 +411,7 @@ mod_coldata_server <- function(id, rv) {
                                                     design = ~Group)
       
       if(length(unique(colData_subset$Batch))>1){
+        colData_subset$Batch <- as.factor(colData_subset$Batch)
         txi_deseq <- DESeq2::DESeqDataSetFromTximport(txi_subset, 
                                                       colData = colData_subset, 
                                                       design = ~ Batch + Group)
@@ -469,6 +474,7 @@ mod_coldata_server <- function(id, rv) {
       vsd <- DESeq2::vst(txi_deseq)
       
       if(length(unique(colData_subset$Batch))>1){
+        colData_subset$Batch <- as.factor(colData_subset$Batch)
         SummarizedExperiment::assay(vsd) <- limma::removeBatchEffect(
           txi_subset$counts,
           batch = colData_subset$Batch,
