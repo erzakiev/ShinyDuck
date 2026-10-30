@@ -84,6 +84,14 @@ mod_enrich_server <- function(id, rv) {
       req(rv$app_state == 'ready')
       req(rv$multiple_groups == 0)
       ncat <- as.numeric(input$showCategory)
+
+      message("GO_result class: ", paste(class(rv$GO_result), collapse = ", "))
+      message("GO_result typeof: ", typeof(rv$GO_result))
+      message("GO_result is NULL: ", is.null(rv$GO_result))
+
+      if (!is.null(rv$GO_result)) {
+        message("GO_result rows: ", nrow(as.data.frame(rv$GO_result)))
+      }
       
       if(typeof(rv$GO_result)=='character'){
         plot.new()
