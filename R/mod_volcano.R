@@ -33,7 +33,7 @@ mod_volcano_server <- function(id, rv) {
       df
     })
 
-    output$Volcano <- reactive({
+    output$Volcano <- plotly::renderPlotly({
       df <- volcano_df()
 
       tx <- plotly::highlight_key(df, ~SYMBOL)
