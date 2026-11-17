@@ -9,6 +9,7 @@ Depends: R (>= 4.2.0)
 Imports:
     shiny,
     shinydashboard,
+    shinyFiles,
     bs4Dash,
     plotly,
     DT,
