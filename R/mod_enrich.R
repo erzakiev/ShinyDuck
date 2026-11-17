@@ -85,7 +85,7 @@ mod_enrich_server <- function(id, rv) {
       req(rv$multiple_groups == 0)
       ncat <- as.numeric(input$showCategory)
       
-      if(rv$GO_result=='oops no significant genes to begin with...'){
+      if(typeof(rv$GO_result)=='character'){
         plot.new()
         text(
           0.2, 0.9,

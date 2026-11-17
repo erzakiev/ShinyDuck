@@ -33,7 +33,7 @@ mod_volcano_server <- function(id, rv) {
       df
     })
 
-    output$Volcano <- reactive({
+    output$Volcano <- plotly::renderPlotly({
       df <- volcano_df()
 
       tx <- plotly::highlight_key(df, ~SYMBOL)
@@ -82,7 +82,7 @@ mod_volcano_server <- function(id, rv) {
     output$Volcano_ui <- renderUI({
       if (!isTRUE(rv$app_state == "ready") || rv$multiple_groups != 0)
         return(NULL)
-      plotly::plotlyOutput(ns("Volcano"), height = 900)
+      plotly::plotlyOutput(session$ns("Volcano"), height = 900)
     })
 
 
