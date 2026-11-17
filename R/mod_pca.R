@@ -44,7 +44,7 @@ mod_pca_server <- function(id, rv) {
                    ntop = nrow(SummarizedExperiment::assay(dsq)))
 
       p + ggrepel::geom_label_repel(
-        label = colnames(dsq),
+        label = rv$colData$Shortname,
         max.overlaps = 30
       ) +
         ggplot2::theme_classic()
@@ -58,7 +58,7 @@ mod_pca_server <- function(id, rv) {
                    ntop = 500)
 
       p + ggrepel::geom_label_repel(
-        label = colnames(dsq),
+        label = rv$colData$Shortname,
         max.overlaps = 30
       ) +
         ggplot2::theme_classic()

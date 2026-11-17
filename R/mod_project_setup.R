@@ -63,8 +63,12 @@ mod_project_setup_server <- function(id, rv, roots, house_path) {
         rv$app_state <- "ready"
         rv$projFolderFull <- inFolder
         rv$colData <- readRDS(file.path(rv$projFolderFull, "colData.RDS"))
-        if(ncol(rv$colData)<4){
+        if(!"Batch" %in% colnames(rv$colData)){
           rv$colData$Batch <- 1
+          saveRDS(rv$colData, file.path(rv$projFolderFull, "colData.RDS"))
+        }
+        if(!"Shortname" %in% colnames(rv$colData)){
+          rv$colData$Shortname <- rv$colData$Sample
           saveRDS(rv$colData, file.path(rv$projFolderFull, "colData.RDS"))
         }
         rv$referenceGenomeChoice <- readRDS(file.path(rv$projFolderFull, "referenceGenomeChoice.RDS"))

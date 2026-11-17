@@ -363,7 +363,7 @@ make_TPM_container <- function(df, colData){
   #saveRDS(colData, '~/colData.RDS')
 
   sample_groups <- as.character(colData$Group[
-    match(sample_names, colData$Sample)
+    match(sample_names, colData$Shortname)
   ])
   #saveRDS(sample_groups, '~/sample_groups.RDS')
 
@@ -425,7 +425,7 @@ add_group_separators <- function(dt, df, colData){
   sample_names <- colnames(df)[2:ncol(df)]
 
   sample_groups <- colData[
-    match(sample_names, colData$Sample),
+    match(sample_names, colData$Shortname),
     "Group",
     drop = TRUE
   ]

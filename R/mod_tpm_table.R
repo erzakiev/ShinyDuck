@@ -40,6 +40,7 @@ mod_tpm_table_server <- function(id, rv) {
 
       df <- as.data.frame(rv$txi$abundance)
       df <- convertDfRownamesEns2Symb(df, rv$OrgDeeBee)
+      colnames(df) <- rv$colData$Shortname
 
       ord <- order(rv$colData$Group)
       df <- df[,ord]
